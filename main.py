@@ -1,8 +1,6 @@
-from typing import Union
-
 from fastapi import FastAPI
-from api.v1 import api as api_v1
+from routers import router
 
 app = FastAPI()
 
-app.include_router(api_v1.router)
+app.include_router(router.router)
