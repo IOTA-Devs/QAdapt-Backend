@@ -70,10 +70,10 @@ async def login(user_credentials: UserLoginCredentials):
     if not user:
         raise HTTPException(status_code=400, detail="Invalid username or password")
     
-    if not verify_password(user_credentials.password, user["passwordHash"]):
+    if not verify_password(user_credentials.password, user["passwordhash"]):
         raise HTTPException(status_code=400, detail="Invalid username or password")
     
-    session = await sessionHandler.create_session(user["userId"])
+    session = await sessionHandler.create_session(user["userid"])
     if not session:
         raise HTTPException(status_code=500, detail="Failed to create session")
     
