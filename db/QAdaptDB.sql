@@ -52,9 +52,9 @@ CREATE TABLE TestLogs (
 CREATE TABLE UserSessions (
     sessionId TEXT PRIMARY KEY,
     userId INT NOT NULL,
-    expiresAt DATE NOT NULL,
+    expiresAt TIMESTAMPTZ NOT NULL,
     refreshTokenHash VARCHAR(64) NOT NULL,
-    createdAt DATE NOT NULL DEFAULT CURRENT_DATE,
+    createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lastAccessed DATE NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );

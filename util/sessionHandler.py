@@ -19,7 +19,7 @@ async def create_session(user_id: int):
     session_id = str(uuid4())
     access_token_expiry = timedelta(hours=1)
     access_token, _ = generate_access_token({ "userId": user_id, "sessionId": session_id, "username": user["username"]}, access_token_expiry)
-    refresh_token, refresh_token_expires_at = generate_refresh_token({ "userId": user_id, "sessionId": session_id, "username": user["username"]})
+    refresh_token, refresh_token_expires_at = generate_refresh_token()
 
     refresh_token_hash = sha256()
     refresh_token_hash.update(refresh_token.encode())
@@ -53,7 +53,7 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
     db = db_conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        db.execute('SELECT * FROM UserSessions WHERE sessionId = %s', (session_id,))
+        db.execute('SELECT us.*, u.username FROM UserSessions us INNER JOIN Users u ON u.userId = us.userid WHERE sessionId = %s;', (session_id,))
         session = db.fetchone()
     except Exception as e:
         print("Error fetching session: ", e)
@@ -64,14 +64,22 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
     
     old_refresh_token_hash = sha256()
     old_refresh_token_hash.update(old_refresh_token.encode())
-    if old_refresh_token_hash.hexdigest() != session["refreshTokenHash"]:
+    if old_refresh_token_hash.hexdigest() != session["refreshtokenhash"]:
         # Clear all user sessions
-
+        try: 
+            db.execute('DELETE FROM UserSessions WHERE userId = %s', (session["userid"],))
+            db_conn.commit()
+        except Exception as e:
+            print("Error deleting sessions: ", e)
+        
         return { "tokens": None, "error": "Invalid refresh token." }
     
+    if session["expiresat"] < datetime.now(timezone.utc):
+        return { "tokens": None, "error" : "Session has expired" }
+    
     access_token_expiry = timedelta(hours=1)
-    new_refresh_token, refresh_token_expires_at = generate_refresh_token({ "userId": session["userid"], "sessionId": session_id, "username": session["username"]}, access_token_expiry)
-    new_access_token, _ = generate_access_token({ "userId": session["userId"], "sessionId": session_id, "username": session["username"]})
+    new_refresh_token, refresh_token_expires_at = generate_refresh_token()
+    new_access_token, _ = generate_access_token({ "userId": session["userid"], "sessionId": session_id, "username": session["username"]})
 
     new_refresh_token_hash = sha256()
     new_refresh_token_hash.update(new_refresh_token.encode())

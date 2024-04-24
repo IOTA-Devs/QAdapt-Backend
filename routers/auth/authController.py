@@ -1,5 +1,6 @@
 from hashlib import sha256
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 import psycopg2
 from config.db import get_conn, release_conn
 from pydantic import BaseModel, EmailStr
@@ -7,7 +8,7 @@ from typing import Annotated
 from util import sessionHandler
 from util.password import get_password_hash, verify_password
 from psycopg2.extras import RealDictCursor
-from util.jwt import verify_token
+from util.jwt import verify_access_token
 
 router = APIRouter()
 
@@ -57,21 +58,21 @@ async def singup(new_user: NewUser):
     return session
 
 @router.post("/login")
-async def login(user_credentials: UserLoginCredentials):
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        db.execute('SELECT * FROM Users WHERE email = %s', (user_credentials.email,))
+        db.execute('SELECT * FROM Users WHERE email = %s', (form_data.username,))
         user = db.fetchone()
     except psycopg2.OperationalError as e:
         raise HTTPException(status_code=500, detail=str(e))
     
     if not user:
-        raise HTTPException(status_code=400, detail="Invalid username or password")
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
     
-    if not verify_password(user_credentials.password, user["passwordhash"]):
-        raise HTTPException(status_code=400, detail="Invalid username or password")
+    if not verify_password(form_data.password, user["passwordhash"]):
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
     
     session = await sessionHandler.create_session(user["userid"])
     if not session:
@@ -84,10 +85,6 @@ async def login(user_credentials: UserLoginCredentials):
 async def refresh_token(token_data: TokenModel):
     refresh_token = token_data.refresh_token
     session_id = token_data.session_id
-
-    token_payload = verify_token(refresh_token, "refresh")
-    if token_payload["error"]:
-        raise HTTPException(status_code=400, detail=token_payload["error"])
     
     new_tokens = await sessionHandler.revalidate_session(refresh_token, session_id)
     if new_tokens["error"]:
