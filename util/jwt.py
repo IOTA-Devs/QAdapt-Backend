@@ -22,7 +22,7 @@ def generate_refresh_token(expiry_delta: timedelta | None = None):
     if expiry_delta:
         expire = datetime.now(timezone.utc) + expiry_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(days=30)
+        expire = datetime.now(timezone.utc) + timedelta(days=7)
 
     return str(uuid4()), expire
 
