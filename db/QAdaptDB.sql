@@ -56,3 +56,12 @@ CREATE TABLE UserSessions (
     lastAccessed DATE NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
+
+CREATE TABLE PersonalAccessTokens (
+    userId INT NOT NULL,
+    Id SERIAL PRIMARY KEY,
+    accessTokenHash TEXT NOT NULL,
+    expiresAt TIMESTAMPTZ,
+    createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    FOREIGN KEY (userId) REFERENCES Users(userId)
+);

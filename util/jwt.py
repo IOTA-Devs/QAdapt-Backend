@@ -37,5 +37,14 @@ def verify_access_token(token: str):
     
     return {"valid": True, "error": None, "payload": payload}
 
-def generate_new_access_token():
-    pass
+def generate_personal_access_token(user_id: str, expiry_delta: timedelta | None):
+    secret_key = getenv("PERSONAL_TOKEN_SECRET_KEY")
+
+    data = {
+        "userId": user_id,
+        "exp": datetime.now(timezone.utc) + expiry_delta
+    }
+
+    encoded_jwt = jwt.encode(data, secret_key, algorithm="HS256")
+
+    return encoded_jwt
