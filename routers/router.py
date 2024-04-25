@@ -1,9 +1,8 @@
 from fastapi import APIRouter
-from .auth import authController as auth
-from .api_v1 import test
-
+from .auth import authController
+from .api import userController
 router = APIRouter()
 
 # Load auth and api routes
-router.include_router(auth.router, prefix="/auth", tags=["auth"])
-router.include_router(test.router, prefix="/api/v1", tags=["api_v1"])
+router.include_router(authController.router, prefix="/auth", tags=["OAuth2.0"])
+router.include_router(userController.router, prefix="/api/users", tags=["Users"])

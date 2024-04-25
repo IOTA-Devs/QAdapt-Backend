@@ -1,8 +1,6 @@
 CREATE TABLE Users (
     userId SERIAL PRIMARY KEY,
     username VARCHAR(32) NOT NULL UNIQUE,
-    firstName TEXT,
-    lastName TEXT,
     email TEXT NOT NULL UNIQUE,
     passwordHash TEXT NOT NULL,
     joinedAt DATE NOT NULL DEFAULT CURRENT_DATE
