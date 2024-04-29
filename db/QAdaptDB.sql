@@ -4,7 +4,7 @@ CREATE TABLE Users (
     email TEXT NOT NULL UNIQUE,
     passwordHash TEXT NOT NULL,
     joinedAt DATE NOT NULL DEFAULT CURRENT_DATE,
-    deletionTimestamp TIMESTAMPTZ,
+    deletionTimestamp TIMESTAMPTZ
 );
 
 CREATE TABLE Collections (
