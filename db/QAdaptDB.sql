@@ -3,7 +3,8 @@ CREATE TABLE Users (
     username VARCHAR(32) NOT NULL UNIQUE,
     email TEXT NOT NULL UNIQUE,
     passwordHash TEXT NOT NULL,
-    joinedAt DATE NOT NULL DEFAULT CURRENT_DATE
+    joinedAt DATE NOT NULL DEFAULT CURRENT_DATE,
+    deletionTimestamp TIMESTAMPTZ,
 );
 
 CREATE TABLE Collections (
@@ -60,6 +61,7 @@ CREATE TABLE UserSessions (
 CREATE TABLE PersonalAccessTokens (
     userId INT NOT NULL,
     Id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
     accessTokenHash TEXT NOT NULL,
     expiresAt TIMESTAMPTZ,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

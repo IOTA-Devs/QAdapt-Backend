@@ -9,18 +9,10 @@ async def create_session(user_id: int):
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
 
-    # Verify if the user exists
-    try:
-        db.execute('SELECT * FROM Users WHERE userId = %s', (user_id,))
-        user = db.fetchone()
-    except Exception as e:
-        print("Error fetching user while creating session: ", e)
-        return False
-
     # Create session id, access and refresh tokens
     session_id = str(uuid4())
     access_token_expiry = timedelta(hours=1)
-    access_token, _ = generate_access_token({ "userId": user_id, "sessionId": session_id, "username": user["username"]}, access_token_expiry)
+    access_token, _ = generate_access_token({ "userId": user_id, "sessionId": session_id }, access_token_expiry)
     refresh_token, refresh_token_expires_at = generate_refresh_token()
 
     # Hash the current refresh token before storing it
@@ -36,7 +28,7 @@ async def create_session(user_id: int):
         return False
     
     release_conn(db_conn)
-    return { "access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expiry, "session_id": session_id }
+    return { "access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expiry.seconds, "session_id": session_id }
 
 async def get_session(session_id: str):
     db_conn = get_conn()
@@ -90,7 +82,7 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
     # effectively removing the need to log in unless they stop using the app for 7 days straight. 
     access_token_expiry = timedelta(hours=1)
     new_refresh_token, refresh_token_expires_at = generate_refresh_token()
-    new_access_token, _ = generate_access_token({ "userId": session["userid"], "sessionId": session_id, "username": session["username"]})
+    new_access_token, _ = generate_access_token({ "userId": session["userid"], "sessionId": session_id }, access_token_expiry)
 
     new_refresh_token_hash = sha256()
     new_refresh_token_hash.update(new_refresh_token.encode())
@@ -104,7 +96,7 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
         return { "tokens": None, "error": "Error while updating session" }
     
     release_conn(db_conn)
-    return { "tokens": { "access_token": new_access_token, "refresh_token": new_refresh_token, "expires_in": access_token_expiry }, "error": None }
+    return { "tokens": { "access_token": new_access_token, "refresh_token": new_refresh_token, "expires_in": access_token_expiry.seconds }, "error": None }
 
 async def delete_session(session_id: str):
     db_conn = get_conn()

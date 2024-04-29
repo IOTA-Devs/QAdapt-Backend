@@ -6,7 +6,6 @@ from util.jwt import verify_access_token
 
 class User(BaseModel):
     user_id: int
-    username: str
     session_id: str
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -22,5 +21,5 @@ async def deserialize_user(token: Annotated[str, Depends(oauth2_scheme)]):
     if payload["error"]:
         raise credentials_exception
     
-    user = User(username=payload["payload"]["username"], session_id=payload["payload"]["sessionId"], user_id=payload["payload"]["userId"])
+    user = User(session_id=payload["payload"]["sessionId"], user_id=payload["payload"]["userId"])
     return user

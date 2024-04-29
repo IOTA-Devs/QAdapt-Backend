@@ -64,7 +64,6 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     # If the user does not exists or the password is invalid
     if not user:
         raise HTTPException(status_code=400, detail=Error("Incorrect username or password", ErrorCodes.INCORRECT_CREDENTIALS).to_json())
-    
     if not verify_password(form_data.password, user["passwordhash"]):
         raise HTTPException(status_code=400, detail=Error("Incorrect username or password", ErrorCodes.INCORRECT_CREDENTIALS).to_json())
     
