@@ -41,8 +41,9 @@ async def singup(
         raise
     except psycopg2.OperationalError as e:
         raise HTTPException(status_code=500, detail=Error(str(e), ErrorCodes.SERVICE_UNAVAILABLE).to_json())
-
-    release_conn(db_conn)
+    finally:
+        release_conn(db_conn)
+    
     session["user"] = {
         "username": user["username"],
         "user_id": user["userid"]
@@ -60,6 +61,8 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         user = db.fetchone()
     except psycopg2.OperationalError as e:
         raise HTTPException(status_code=500, detail=Error(str(e), ErrorCodes.SERVICE_UNAVAILABLE).to_json())
+    finally:
+        release_conn(db_conn)
     
     # If the user does not exists or the password is invalid
     if not user:
@@ -72,7 +75,6 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     if not session:
         raise HTTPException(status_code=500, detail=Error("Failed to create session", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
     
-    release_conn(db_conn)
     session["user"] = {
         "username": user["username"],
         "user_id": user["userid"]

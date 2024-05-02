@@ -26,8 +26,9 @@ async def create_session(user_id: int):
     except Exception as e:
         print("Error creating session: ", e)
         return False
-    
-    release_conn(db_conn)
+    finally:
+        release_conn(db_conn)
+
     return { "access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expiry.seconds, "session_id": session_id }
 
 async def get_session(session_id: str):
@@ -40,8 +41,9 @@ async def get_session(session_id: str):
     except Exception as e:
         print("Error fetching session: ", e)
         return False
-
-    release_conn(db_conn)
+    finally:
+        release_conn(db_conn)
+    
     return session
 
 async def revalidate_session(old_refresh_token: str, session_id: str):
@@ -53,10 +55,12 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
         db.execute('SELECT us.*, u.username FROM UserSessions us INNER JOIN Users u ON u.userId = us.userid WHERE sessionId = %s;', (session_id,))
         session = db.fetchone()
     except Exception as e:
+        release_conn(db_conn)
         print("Error fetching session: ", e)
         return { "tokens": None, "error": "Error fetching session."}
     
     if not session:
+        release_conn(db_conn)
         return { "tokens": None, "error": "Session has expired or is invalid."}
     
     # Validate the provided refresh token with the one stored on the users session data
@@ -69,11 +73,14 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
             db_conn.commit()
         except Exception as e:
             print("Error deleting sessions: ", e)
+        finally:
+            release_conn(db_conn)
         
         return { "tokens": None, "error": "Invalid refresh token." }
     
     # If the token is valid check if it is expired
     if session["expiresat"] < datetime.now(timezone.utc):
+        release_conn(db_conn)
         return { "tokens": None, "error" : "Session has expired" }
     
     # Create new access and refresh tokens
@@ -94,8 +101,9 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
     except Exception as e:
         print("Error updating session: ", e)
         return { "tokens": None, "error": "Error while updating session" }
+    finally:
+        release_conn(db_conn)
     
-    release_conn(db_conn)
     return { "tokens": { "access_token": new_access_token, "refresh_token": new_refresh_token, "expires_in": access_token_expiry.seconds }, "error": None }
 
 async def delete_session(session_id: str):
@@ -108,3 +116,5 @@ async def delete_session(session_id: str):
     except Exception as e:
         print("Error deleting session", e)
         return False
+    finally:
+        release_conn(db_conn)

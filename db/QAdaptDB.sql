@@ -1,3 +1,5 @@
+-- Tables
+
 CREATE TABLE Users (
     userId SERIAL PRIMARY KEY,
     username VARCHAR(32) NOT NULL UNIQUE,
@@ -17,16 +19,25 @@ CREATE TABLE Collections (
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
 
+CREATE TABLE Scripts (
+    scriptId SERIAL PRIMARY KEY,
+    collectionId INT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    scriptPath TEXT NOT NULL,
+    FOREIGN KEY (collectionId) REFERENCES Collections(collectionId)
+);
+
 CREATE TABLE Tests (
     testId SERIAL PRIMARY KEY,
-    collectionId INT NOT NULL,
+    scriptId INT NOT NULL,
     userId INT NOT NULL,
     name TEXT NOT NULL,
     startTimestamp TIMESTAMP NOT NULL DEFAULT CURRENT_DATE,
     endTimestamp TIMESTAMP,
     status VARCHAR(7) NOT NULL,
-    FOREIGN KEY (collectionId) REFERENCES Collections(collectionId),
-    FOREIGN KEY (userId) REFERENCES Users(userId)
+    FOREIGN KEY (userId) REFERENCES Users(userId),
+    FOREIGN KEY (scriptId) REFERENCES Scripts(scriptId)
 );
 
 CREATE TABLE SelfHealingReports (
