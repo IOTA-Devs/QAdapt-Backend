@@ -16,11 +16,12 @@ router = APIRouter()
 async def singup(
     username: Annotated[str, Form(min_length=1, max_length=32)], 
     email: Annotated[EmailStr, Form()], 
-    password: Annotated[str, Form(min_length=8, max_length=50)]):
+    password: Annotated[str, Form(min_length=8, max_length=50)],
+    full_name: Annotated[str, Form(min_length=1, max_length=150)] = None):
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
     try:
-        # Check if the user already exists
+        # Check if the user already existss
         db.execute('SELECT * FROM Users WHERE email = %s', (email,))
         user = db.fetchone()
         if user:
@@ -29,7 +30,7 @@ async def singup(
         # Hash the password for security and storage
         hashed_password = get_password_hash(password)
 
-        db.execute('INSERT INTO Users (username, email, passwordHash) VALUES (%s, %s, %s) RETURNING userId, username', (username, email, hashed_password))
+        db.execute('INSERT INTO Users (username, email, passwordHash, fullName) VALUES (%s, %s, %s, %s) RETURNING userId, username', (username, email, hashed_password, full_name))
         db_conn.commit()
         user = db.fetchone()
 
@@ -46,7 +47,9 @@ async def singup(
     
     session["user"] = {
         "username": user["username"],
-        "user_id": user["userid"]
+        "user_id": user["userid"],
+        "full_name": full_name,
+        "email": email
     }
     return session
 
@@ -77,7 +80,9 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     
     session["user"] = {
         "username": user["username"],
-        "user_id": user["userid"]
+        "user_id": user["userid"],
+        "full_name": user["fullname"],
+        "email": user["email"]
     }
     return session
 

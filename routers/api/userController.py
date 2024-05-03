@@ -15,7 +15,7 @@ async def get_my_user_info(current_user: Annotated[User, Depends(deserialize_use
     db = db_conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        query = "SELECT userId as user_id, username, email, joinedAt as joined_at FROM Users WHERE userId = %s"
+        query = "SELECT userId as user_id, username, email, fullName as full_name, email, joinedAt as joined_at FROM Users WHERE userId = %s"
         db.execute(query, (current_user.user_id,))
         user = db.fetchone()
 
