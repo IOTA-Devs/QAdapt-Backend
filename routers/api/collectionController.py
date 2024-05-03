@@ -18,9 +18,14 @@ async def get_collections(current_user: Annotated[User, Depends(deserialize_user
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
     try:
-        query = "SELECT collections.collectionid, collections.name, lastmodified, description FROM collections WHERE userid = 1"
-        db.execute(query)
+        query = "SELECT collections.collectionid, collections.name, lastmodified, description FROM collections WHERE userid = %s"
+        db.execute(query, (current_user.user_id,))
         userCollections = db.fetchall()
+        for collection in userCollections:
+            query = "SELECT * FROM tests WHERE userid = %s"
+            db.execute(query, (current_user.user_id,))
+            collectionTests = db.fetchall()
+            collection["tests"] = collectionTests
         return userCollections
         #return current_user
     except HTTPException:
