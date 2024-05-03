@@ -39,7 +39,7 @@ async def verify_personal_access_token(request: Request):
         token_data = db.fetchone()
     except Exception as e:
         print("Error validating token: ", e)
-        raise HTTPException(status_code=500, detail=Error("Error validating token", ErrorCodes.INTERNAL_SERVER_ERROR))
+        raise HTTPException(status_code=500, detail=Error("Error validating token", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
     finally:
         release_conn(db_conn)
 
