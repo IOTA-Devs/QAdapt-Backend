@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
@@ -54,9 +55,10 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
     token_hash = sha256()
     token_hash.update(token.encode())
 
+    token_expires = datetime.now(timezone.utc) + timedelta(seconds=new_token.expiration_delta) if new_token.expiration_delta is not None else datetime.now(timezone.utc) + timedelta(days=30)
     try:
         query = "INSERT INTO PersonalAccessTokens (userId, name, expiresAt, accessTokenHash) VALUES (%s, %s, %s, %s) RETURNING id"
-        db.execute(query, (current_user.user_id, new_token.token_name, new_token.expiration_delta, token_hash.hexdigest()))
+        db.execute(query, (current_user.user_id, new_token.token_name, token_expires, token_hash.hexdigest()))
         token_id = db.fetchone()[0]
         db_conn.commit()
     except Exception as e:
