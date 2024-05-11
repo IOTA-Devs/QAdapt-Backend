@@ -52,7 +52,7 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
 
     # First validate that the session exists
     try:
-        db.execute('SELECT us.*, u.username FROM UserSessions us INNER JOIN Users u ON u.userId = us.userid WHERE sessionId = %s;', (session_id,))
+        db.execute('SELECT us.*, u.username FROM UserSessions us INNER JOIN Users u ON u.userId = us.userid WHERE sessionId = %s', (session_id,))
         session = db.fetchone()
     except Exception as e:
         release_conn(db_conn)
