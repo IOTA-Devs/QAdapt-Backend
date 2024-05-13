@@ -14,3 +14,8 @@ DB_PASSWORD <- password for your postgres database
 
 ## Database
 Refer to db/dbQAdaptDB.sql for the database schema
+
+## Run
+´´´
+fastapi dev main.py
+´´´
