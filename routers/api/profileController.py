@@ -2,10 +2,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 import psycopg2
 from pydantic import BaseModel
-from config.db import get_conn, release_conn
+from ...internal import get_conn, release_conn
 
-from middlewares.deserializeUser import User, deserialize_user
-from models import Error, ErrorCodes
+from ...middlewares import User, deserialize_user
+from ...models import Error, ErrorCodes
 
 router = APIRouter()
 

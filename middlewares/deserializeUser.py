@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
-from util.jwt import verify_access_token
+from ..internal import verify_access_token
 
 class User(BaseModel):
     user_id: int

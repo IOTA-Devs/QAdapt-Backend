@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from routers import router
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-from services import clear_user_sessions_job
+from .jobs import clear_user_sessions_job
+from .routers import router
 
 load_dotenv()
 app = FastAPI()

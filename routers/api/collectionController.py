@@ -1,11 +1,11 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 import psycopg2
-from config.db import get_conn, release_conn
+from ...internal import get_conn, release_conn
 from psycopg2.extras import RealDictCursor
-from models import ErrorCodes, Error
+from ...models import ErrorCodes, Error
 
-from middlewares.deserializeUser import User, deserialize_user
+from ...middlewares import User, deserialize_user
 
 router = APIRouter()
 

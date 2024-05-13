@@ -1,7 +1,7 @@
 import threading
 import schedule
 import time
-from config.db import get_conn, release_conn
+from ..internal import get_conn, release_conn
 
 def clear_user_sessions():
     db_conn = get_conn()

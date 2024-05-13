@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime, timezone
-from config.db import get_conn, release_conn
-from util.jwt import generate_access_token, generate_refresh_token
+from .db import get_conn, release_conn
+from .jwt import generate_access_token, generate_refresh_token
 from uuid import uuid4
 from hashlib import sha256
 from psycopg2.extras import RealDictCursor

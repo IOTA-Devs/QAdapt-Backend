@@ -2,7 +2,7 @@ from hashlib import sha256
 from urllib.request import Request
 from jose import jwt
 from fastapi import HTTPException
-from config.db import get_conn, release_conn
+from internal.db import get_conn, release_conn
 from os import getenv
 from datetime import datetime, timezone
 from models import Error, ErrorCodes
