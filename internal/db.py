@@ -1,7 +1,21 @@
-import os
 from psycopg2 import pool
+from os import getenv
 
-pool = pool.SimpleConnectionPool(1, 20, database="qadapt", host="localhost", user="postgres", password=os.getenv("DB_PASSWORD"), port=5432)
+db_credentials = {
+    "database": getenv("DB_NAME"),
+    "user": getenv("DB_USER"),
+    "password": getenv("DB_PASSWORD"),
+}
+
+pool = pool.SimpleConnectionPool(
+    1, 
+    20, 
+    database=db_credentials.get("database"), 
+    host="localhost", 
+    user=db_credentials.get("user"), 
+    password=db_credentials.get("password"), 
+    port=5432
+)
 def get_conn():
     return pool.getconn()
 

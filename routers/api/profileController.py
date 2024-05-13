@@ -1,11 +1,11 @@
+import psycopg2
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-import psycopg2
 from pydantic import BaseModel
-from ...internal import get_conn, release_conn
 
+from ...internal import get_conn, release_conn
 from ...middlewares import User, deserialize_user
-from ...models import Error, ErrorCodes
+from ...classes import Error, ErrorCodes
 
 router = APIRouter()
 

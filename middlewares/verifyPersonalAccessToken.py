@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from internal.db import get_conn, release_conn
 from os import getenv
 from datetime import datetime, timezone
-from models import Error, ErrorCodes
+from classes import Error, ErrorCodes
 from psycopg2.extras import RealDictCursor
 
 async def verify_personal_access_token(request: Request):

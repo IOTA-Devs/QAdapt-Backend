@@ -1,13 +1,14 @@
+import psycopg2
 from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security import OAuth2PasswordRequestForm
-import psycopg2
-from ...internal import get_conn, release_conn
 from pydantic import EmailStr
 from typing import Annotated
+from psycopg2.extras import RealDictCursor
+
+from ...internal import get_conn, release_conn
 from ...middlewares import User, deserialize_user
 from ...internal import sessionHandler, get_password_hash, verify_password
-from psycopg2.extras import RealDictCursor
-from ...models import ErrorCodes, Error
+from ...classes import ErrorCodes, Error
 
 router = APIRouter()
 

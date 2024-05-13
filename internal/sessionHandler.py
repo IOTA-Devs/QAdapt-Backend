@@ -1,9 +1,10 @@
 from datetime import timedelta, datetime, timezone
-from .db import get_conn, release_conn
-from .jwt import generate_access_token, generate_refresh_token
 from uuid import uuid4
 from hashlib import sha256
 from psycopg2.extras import RealDictCursor
+
+from .db import get_conn, release_conn
+from .jwt import generate_access_token, generate_refresh_token
 
 async def create_session(user_id: int):
     db_conn = get_conn()

@@ -2,14 +2,14 @@ from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-from ...internal import get_conn, release_conn
-from ...middlewares import User, deserialize_user
 from pydantic import BaseModel
 from psycopg2.extras import RealDictCursor
 from jose import jwt
 from os import getenv
 
-from ...models import Error, ErrorCodes
+from ...internal import get_conn, release_conn
+from ...middlewares import User, deserialize_user
+from ...classes import Error, ErrorCodes
 
 router = APIRouter()
 
