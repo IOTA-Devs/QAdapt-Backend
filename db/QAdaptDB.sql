@@ -16,6 +16,7 @@ CREATE TABLE Collections (
     lastModified Date NOT NULL,
     description TEXT NOT NULL,
     tests INT NOT NULL DEFAULT 0,
+    scripts INT NOT NULL DEFAULT 0,
     userId INT NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
@@ -23,10 +24,10 @@ CREATE TABLE Collections (
 CREATE TABLE Scripts (
     scriptId SERIAL PRIMARY KEY,
     collectionId INT NOT NULL,
+    userId INT NOT NULL,
     name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    scriptPath TEXT NOT NULL,
-    FOREIGN KEY (collectionId) REFERENCES Collections(collectionId)
+    FOREIGN KEY (collectionId) REFERENCES Collections(collectionId),
+    FOREIGN KEY (userId) REFERENCES Users(userId)
 );
 
 CREATE TABLE Tests (
@@ -48,15 +49,6 @@ CREATE TABLE SelfHealingReports (
     healingDescription TEXT NOT NULL,
     status VARCHAR(7) NOT NULL,
     screenshotPath TEXT,
-    FOREIGN KEY (testId) REFERENCES Tests(testId)
-);
-
-CREATE TABLE TestLogs (
-    logId SERIAL PRIMARY KEY,
-    testId INT NOT NULL,
-    logName TEXT NOT NULL,
-    logDescription TEXT NOT NULL,
-    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (testId) REFERENCES Tests(testId)
 );
 

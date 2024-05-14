@@ -21,11 +21,11 @@ async def get_my_user_info(current_user: Annotated[User, Depends(deserialize_use
 
         if user == None:
             raise HTTPException(status_code=404, detail=Error("User not found", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
-
-        return user
     except HTTPException:
         raise
     except psycopg2.OperationalError as e:
         raise HTTPException(status_code=500, detail=Error(str(e), ErrorCodes.SERVICE_UNAVAILABLE).to_json())
     finally:
         release_conn(db_conn)
+
+    return user

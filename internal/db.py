@@ -7,6 +7,7 @@ db_credentials = {
     "password": getenv("DB_PASSWORD"),
 }
 
+# TODO: Update to use SQLAlchemy instead of psycopg2
 pool = pool.SimpleConnectionPool(
     1, 
     20, 

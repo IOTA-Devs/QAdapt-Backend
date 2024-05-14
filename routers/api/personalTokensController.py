@@ -13,15 +13,15 @@ from ...classes import Error, ErrorCodes
 
 router = APIRouter()
 
-class NewPersonalAccessToken(BaseModel):
+class NewPersonalAccessTokenBody(BaseModel):
     expiration_delta: int | None = None # in seconds
     token_name: str
 
-class RemovePersonalAccessToken(BaseModel):
+class RemovePersonalAccessTokenBody(BaseModel):
     token_id: int
 
 @router.post("/generte_personal_access_token")
-async def generate_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], new_token: NewPersonalAccessToken):
+async def generate_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], new_token: NewPersonalAccessTokenBody):
     db_conn = get_conn()
     db = db_conn.cursor()
 
@@ -70,7 +70,7 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
     return { "token": token, "token_id": token_id }
 
 @router.delete("/delete_personal_access_token")
-async def delete_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], token: RemovePersonalAccessToken):
+async def delete_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], token: RemovePersonalAccessTokenBody):
     db_conn = get_conn()
     db = db_conn.cursor()
 
