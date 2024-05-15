@@ -69,13 +69,7 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
     old_refresh_token_hash.update(old_refresh_token.encode())
     if old_refresh_token_hash.hexdigest() != session["refreshtokenhash"]:
         # Clear all user sessions
-        try: 
-            db.execute('DELETE FROM UserSessions WHERE userId = %s', (session["userid"],))
-            db_conn.commit()
-        except Exception as e:
-            print("Error deleting sessions: ", e)
-        finally:
-            release_conn(db_conn)
+        clear_all_user_sessions(session["userid"])
         
         return { "tokens": None, "error": "Invalid refresh token." }
     
@@ -117,5 +111,17 @@ async def delete_session(session_id: str):
     except Exception as e:
         print("Error deleting session", e)
         return False
+    finally:
+        release_conn(db_conn)
+
+async def clear_all_user_sessions(user_id: int):
+    db_conn = get_conn()
+    db = db_conn.cursor(cursor_factory=RealDictCursor)
+
+    try: 
+        db.execute('DELETE FROM UserSessions WHERE userId = %s', (user_id,))
+        db_conn.commit()
+    except Exception as e:
+        print("Error deleting sessions: ", e)
     finally:
         release_conn(db_conn)

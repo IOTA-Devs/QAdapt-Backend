@@ -65,7 +65,7 @@ CREATE TABLE UserSessions (
 CREATE TABLE PersonalAccessTokens (
     userId INT NOT NULL,
     Id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name VARCHAR(100) NOT NULL,
     accessTokenHash TEXT NOT NULL,
     expiresAt TIMESTAMPTZ,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

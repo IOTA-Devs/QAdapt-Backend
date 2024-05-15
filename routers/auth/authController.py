@@ -5,10 +5,10 @@ from pydantic import EmailStr
 from typing import Annotated
 from psycopg2.extras import RealDictCursor
 
-from ...internal import get_conn, release_conn
+from ...internal import get_conn, release_conn, get_password_hash, verify_password
 from ...middlewares import User, deserialize_user
-from ...internal import sessionHandler, get_password_hash, verify_password
 from ...classes import ErrorCodes, Error
+from ...internal import sessionHandler
 
 router = APIRouter()
 
@@ -18,6 +18,7 @@ async def singup(
     email: Annotated[EmailStr, Form()], 
     password: Annotated[str, Form(min_length=8, max_length=50)],
     full_name: Annotated[str, Form(min_length=1, max_length=150)] = None):
+
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
     try:

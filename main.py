@@ -1,11 +1,12 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 from fastapi import FastAPI
-from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from .jobs import clear_user_sessions_job
 from .routers import router
 
-load_dotenv()
 app = FastAPI()
 
 # Check for required env variables

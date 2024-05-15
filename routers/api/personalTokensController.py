@@ -86,7 +86,7 @@ async def delete_personal_access_token(current_user: Annotated[User, Depends(des
     
     return { "message": "Token deleted" }
 
-@router.get("/get_personal_access_tokens")
+@router.get("/")
 async def get_personal_access_tokens(current_user: Annotated[User, Depends(deserialize_user)]):
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
@@ -102,6 +102,10 @@ async def get_personal_access_tokens(current_user: Annotated[User, Depends(deser
         release_conn(db_conn)
 
     if not tokens:
-        return []
+        return {
+            "personal_tokens": []
+        }
     
-    return tokens
+    return {
+        "personal_tokens": tokens
+    }
