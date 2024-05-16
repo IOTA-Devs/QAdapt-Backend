@@ -20,7 +20,7 @@ class NewPersonalAccessTokenBody(BaseModel):
 class RemovePersonalAccessTokenBody(BaseModel):
     token_id: int
 
-@router.post("/generte_personal_access_token")
+@router.post("/generate_personal_access_token")
 async def generate_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], new_token: NewPersonalAccessTokenBody):
     db_conn = get_conn()
     db = db_conn.cursor()
@@ -55,7 +55,7 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
     token_hash = sha256()
     token_hash.update(token.encode())
 
-    token_expires = datetime.now(timezone.utc) + timedelta(seconds=new_token.expiration_delta) if new_token.expiration_delta is not None else datetime.now(timezone.utc) + timedelta(days=30)
+    token_expires = datetime.now(timezone.utc) + timedelta(seconds=new_token.expiration_delta) if new_token.expiration_delta is not None else None
     try:
         query = "INSERT INTO PersonalAccessTokens (userId, name, expiresAt, accessTokenHash) VALUES (%s, %s, %s, %s) RETURNING id"
         db.execute(query, (current_user.user_id, new_token.token_name, token_expires, token_hash.hexdigest()))
@@ -92,7 +92,7 @@ async def get_personal_access_tokens(current_user: Annotated[User, Depends(deser
     db = db_conn.cursor(cursor_factory=RealDictCursor)
     
     try:
-        query = "SELECT userId as user_id, name, expiresAt as expires_at, createdAt as craeted_at FROM PersonalAccessTokens WHERE userId = %s"
+        query = "SELECT userId as user_id, name, expiresAt as expires_at, createdAt as created_at FROM PersonalAccessTokens WHERE userId = %s"
         db.execute(query, (current_user.user_id,))
         tokens = db.fetchall()
     except Exception as e:
