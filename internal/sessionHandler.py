@@ -114,7 +114,7 @@ async def delete_session(session_id: str):
     finally:
         release_conn(db_conn)
 
-async def clear_all_user_sessions(user_id: int):
+def clear_all_user_sessions(user_id: int):
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
 

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from psycopg2.extras import RealDictCursor
@@ -18,7 +18,7 @@ class NewPersonalAccessTokenBody(BaseModel):
     token_name: str
 
 class RemovePersonalAccessTokenBody(BaseModel):
-    token_id: int
+    token_ids: List[int]
 
 @router.post("/generate_personal_access_token")
 async def generate_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], new_token: NewPersonalAccessTokenBody):
@@ -69,14 +69,17 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
 
     return { "token": token, "token_id": token_id }
 
-@router.delete("/delete_personal_access_token")
-async def delete_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], token: RemovePersonalAccessTokenBody):
+@router.delete("/delete_personal_access_tokens")
+async def delete_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], tokens: RemovePersonalAccessTokenBody):
+    if (len(tokens.token_ids) > 5):
+        raise HTTPException(status_code=400, detail=Error("Cannot delete more than 5 tokens at once", ErrorCodes.INVALID_REQUEST).to_json())
+    
     db_conn = get_conn()
     db = db_conn.cursor()
 
     try:
-        query = "DELETE FROM PersonalAccessTokens WHERE userId = %s AND id = %s"
-        db.execute(query, (current_user.user_id, token.token_id))
+        query = "DELETE FROM PersonalAccessTokens WHERE userId = %s AND Id = ANY(%s)"
+        db.execute(query, (current_user.user_id, tokens.token_ids))
         db_conn.commit()
     except Exception as e:
         print("Error deleting token: ", e)
@@ -84,7 +87,7 @@ async def delete_personal_access_token(current_user: Annotated[User, Depends(des
     finally:
         release_conn(db_conn)
     
-    return { "message": "Token deleted" }
+    return { "message": "Tokens deleted" }
 
 @router.get("/")
 async def get_personal_access_tokens(current_user: Annotated[User, Depends(deserialize_user)]):
@@ -92,7 +95,7 @@ async def get_personal_access_tokens(current_user: Annotated[User, Depends(deser
     db = db_conn.cursor(cursor_factory=RealDictCursor)
     
     try:
-        query = "SELECT userId as user_id, name, expiresAt as expires_at, createdAt as created_at FROM PersonalAccessTokens WHERE userId = %s"
+        query = "SELECT Id as token_id, userId as user_id, name, expiresAt as expires_at, createdAt as created_at FROM PersonalAccessTokens WHERE userId = %s"
         db.execute(query, (current_user.user_id,))
         tokens = db.fetchall()
     except Exception as e:
