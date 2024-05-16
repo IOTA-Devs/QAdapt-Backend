@@ -2,7 +2,6 @@
 
 ## Installation
 pip install -r requirements.txt
-uvicorn main:app --reload
 
 ## dotenv
 Create a .env file in the root directory and add the following variables:
@@ -20,6 +19,6 @@ DB_PASSWORD <- password for your postgres database
 Refer to db/dbQAdaptDB.sql for the database schema
 
 ## Run
-´´´
+```
 fastapi dev main.py
-´´´
+```
