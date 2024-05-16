@@ -14,7 +14,7 @@ router = APIRouter()
 #innerjoin, procedure
 @router.get('/')
 async def get_collections(current_user: Annotated[User, Depends(deserialize_user)]):
-    #idk si esto se tiene que hacer
+    # idk si esto se tiene que hacer
     db_conn = get_conn()
     db = db_conn.cursor(cursor_factory=RealDictCursor)
     try:
@@ -34,3 +34,15 @@ async def get_collections(current_user: Annotated[User, Depends(deserialize_user
         raise HTTPException(status_code=500, detail=Error(str(e), ErrorCodes.SERVICE_UNAVAILABLE).to_json())
     finally:
         release_conn(db_conn)
+
+@router.post('/create_collection')
+async def create_collection(current_user: Annotated[User, Depends(deserialize_user)]):
+    return HTTPException(status_code=501, detail="Not implemented")
+
+@router.post('/delete_collections')
+async def delete_collections(current_user: Annotated[User, Depends(deserialize_user)]):
+    return HTTPException(status_code=501, detail="Not implemented")
+
+@router.put('/update_collection')
+async def update_collection(current_user: Annotated[User, Depends(deserialize_user)]):
+    return HTTPException(status_code=501, detail="Not implemented")
