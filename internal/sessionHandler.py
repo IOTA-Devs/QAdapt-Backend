@@ -103,10 +103,11 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
 
 async def delete_session(session_id: str):
     db_conn = get_conn()
-    db = db_conn.cursor(cursor_factory=RealDictCursor)
+    db = db_conn.cursor()
 
     try: 
         db.execute('DELETE FROM UserSessions WHERE sessionId = %s', (session_id,))
+        db_conn.commit()
         return True
     except Exception as e:
         print("Error deleting session", e)
@@ -116,7 +117,7 @@ async def delete_session(session_id: str):
 
 def clear_all_user_sessions(user_id: int):
     db_conn = get_conn()
-    db = db_conn.cursor(cursor_factory=RealDictCursor)
+    db = db_conn.cursor()
 
     try: 
         db.execute('DELETE FROM UserSessions WHERE userId = %s', (user_id,))
