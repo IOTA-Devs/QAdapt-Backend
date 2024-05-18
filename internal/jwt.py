@@ -31,9 +31,9 @@ def verify_access_token(token: str):
     
     payload = jwt.decode(token, secret_key, algorithms=["HS256"])
     if payload["exp"] < datetime.now(timezone.utc).timestamp():
-        return {"valid": False, "error": "Token has expired.", payload: None}
+        return {"valid": False, "error": "Token has expired.", "payload": None}
     if not payload:
-        return {"valid": False, "error": "Invalid token provided.", payload: None}
+        return {"valid": False, "error": "Invalid token provided.", "payload": None}
     
     return {"valid": True, "error": None, "payload": payload}
 
