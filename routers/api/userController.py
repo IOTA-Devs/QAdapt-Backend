@@ -14,7 +14,7 @@ async def get_my_user_info(current_user: Annotated[User, Depends(deserialize_use
     with get_db_cursor() as cur:
         query = "SELECT userId as user_id, username, email, fullName as full_name, email, joinedAt as joined_at FROM Users WHERE userId = %s"
         cur.execute(query, (current_user.user_id,))
-        user = db.fetchone()
+        user = cur.fetchone()
 
         if user == None:
             raise HTTPException(status_code=404, detail=Error("User not found", ErrorCodes.RESOURCE_NOT_FOUND).to_json())

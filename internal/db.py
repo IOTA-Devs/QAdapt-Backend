@@ -36,7 +36,8 @@ def get_db_cursor():
     except Exception as e:
         if conn:
             conn.rollback()
-        print(f'DB Error: {e}')
+
+        raise e
     finally:
         if cur:
             cur.close()
