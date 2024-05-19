@@ -27,7 +27,6 @@ async def get_collections(current_user: Annotated[User, Depends(deserialize_user
             collectionTests = db.fetchall()
             collection["tests"] = collectionTests
         return userCollections
-        #return current_user
     except HTTPException:
         raise 
     except psycopg2.OperationalError as e:

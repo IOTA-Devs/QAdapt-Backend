@@ -25,6 +25,7 @@ CREATE TABLE Scripts (
     scriptId SERIAL PRIMARY KEY,
     collectionId INT NOT NULL,
     userId INT NOT NULL,
+    tests INT NOT NULL DEFAULT 0,
     name TEXT NOT NULL,
     FOREIGN KEY (collectionId) REFERENCES Collections(collectionId),
     FOREIGN KEY (userId) REFERENCES Users(userId)

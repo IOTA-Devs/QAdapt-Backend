@@ -1,5 +1,7 @@
 from psycopg2 import pool
 from os import getenv
+from contextlib import contextmanager
+from psycopg2.extras import RealDictCursor
 
 db_credentials = {
     "database": getenv("DB_NAME"),
@@ -8,7 +10,6 @@ db_credentials = {
     "host": getenv("DB_HOST")
 }
 
-# TODO: Update to use SQLAlchemy instead of psycopg2
 pool = pool.SimpleConnectionPool(
     1, 
     20, 
@@ -23,3 +24,21 @@ def get_conn():
 
 def release_conn(conn):
     pool.putconn(conn)
+
+@contextmanager
+def get_db_cursor():
+    conn = None
+    try:
+        conn = get_conn()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        yield cur
+        conn.commit()
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f'DB Error: {e}')
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            release_conn(conn)
