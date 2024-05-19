@@ -1,7 +1,7 @@
 from hashlib import sha256
 from urllib.request import Request
 from jose import jwt
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from internal.db import get_conn, release_conn
 from os import getenv
 from datetime import datetime, timezone
@@ -10,7 +10,7 @@ from psycopg2.extras import RealDictCursor
 
 async def verify_personal_access_token(request: Request):
     token_exception = HTTPException(
-        status_code=401,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Unauthorized"
     )
 
@@ -39,7 +39,7 @@ async def verify_personal_access_token(request: Request):
         token_data = db.fetchone()
     except Exception as e:
         print("Error validating token: ", e)
-        raise HTTPException(status_code=500, detail=Error("Error validating token", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=Error("Error validating token", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
     finally:
         release_conn(db_conn)
 

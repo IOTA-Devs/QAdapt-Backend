@@ -1,8 +1,6 @@
-import psycopg2
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 from pydantic import BaseModel
-from psycopg2.extras import RealDictCursor
 
 from ...internal import verify_password, get_password_hash, get_db_cursor
 from ...middlewares import User, deserialize_user
@@ -19,7 +17,7 @@ class NewProfileDataBody(BaseModel):
 async def update_profile_data(current_user: Annotated[User, Depends(deserialize_user)], new_profile_data_body: NewProfileDataBody):
     with get_db_cursor() as cur:
         if not new_profile_data_body.new_username and not new_profile_data_body.new_name:
-            raise HTTPException(status_code=400, detail=Error("No data provided", ErrorCodes.BAD_REQUEST).to_json())
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("No data provided", ErrorCodes.BAD_REQUEST).to_json())
         
         query = 'UPDATE Users SET '
         params = []
@@ -58,9 +56,9 @@ async def change_password(
         user = cur.fetchone()
 
         if not user:
-            raise HTTPException(status_code=404, detail=Error("User not found", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=Error("User not found", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
         if not verify_password(old_password, user['passwordhash']):
-            raise HTTPException(status_code=400, detail=Error("Invalid password", ErrorCodes.AUTHENTICATION_ERROR).to_json())
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("Invalid password", ErrorCodes.AUTHENTICATION_ERROR).to_json())
 
         # Hash the new password
         new_hashed_password = get_password_hash(new_password)

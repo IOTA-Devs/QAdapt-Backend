@@ -1,6 +1,6 @@
 import psycopg2
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from psycopg2.extras import RealDictCursor
 
 from ...classes import ErrorCodes, Error
@@ -30,18 +30,18 @@ async def get_collections(current_user: Annotated[User, Depends(deserialize_user
     except HTTPException:
         raise 
     except psycopg2.OperationalError as e:
-        raise HTTPException(status_code=500, detail=Error(str(e), ErrorCodes.SERVICE_UNAVAILABLE).to_json())
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=Error(str(e), ErrorCodes.SERVICE_UNAVAILABLE).to_json())
     finally:
         release_conn(db_conn)
 
 @router.post('/create_collection')
 async def create_collection(current_user: Annotated[User, Depends(deserialize_user)]):
-    return HTTPException(status_code=501, detail="Not implemented")
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
 @router.post('/delete_collections')
 async def delete_collections(current_user: Annotated[User, Depends(deserialize_user)]):
-    return HTTPException(status_code=501, detail="Not implemented")
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
 @router.put('/update_collection')
 async def update_collection(current_user: Annotated[User, Depends(deserialize_user)]):
-    return HTTPException(status_code=501, detail="Not implemented")
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")

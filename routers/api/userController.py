@@ -1,7 +1,5 @@
-import psycopg2
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
-from psycopg2.extras import RealDictCursor
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from ...internal import get_db_cursor
 from ...classes import ErrorCodes, Error
@@ -17,6 +15,6 @@ async def get_my_user_info(current_user: Annotated[User, Depends(deserialize_use
         user = cur.fetchone()
 
         if user == None:
-            raise HTTPException(status_code=404, detail=Error("User not found", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=Error("User not found", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
 
         return user

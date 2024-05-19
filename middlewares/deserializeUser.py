@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 
@@ -13,7 +13,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 async def deserialize_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
-        status_code=401,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Unauthorized",
         headers={"WWW-Authenticate": "Bearer"}
     )

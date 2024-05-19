@@ -36,8 +36,8 @@ CREATE TABLE Tests (
     scriptId INT NOT NULL,
     userId INT NOT NULL,
     name TEXT NOT NULL,
-    startTimestamp TIMESTAMP NOT NULL DEFAULT CURRENT_DATE,
-    endTimestamp TIMESTAMP,
+    startTimestamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_DATE,
+    endTimestamp TIMESTAMPTZ,
     status VARCHAR(7) NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(userId),
     FOREIGN KEY (scriptId) REFERENCES Scripts(scriptId)

@@ -3,7 +3,6 @@ import schedule
 import time
 
 from ..internal import get_conn, release_conn
-from ..internal import get_db_cursor
 
 def clear_user_sessions():
     db_conn = get_conn()

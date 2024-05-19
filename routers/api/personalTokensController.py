@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from psycopg2.extras import RealDictCursor
 from jose import jwt
 from os import getenv
 
@@ -25,7 +24,7 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
     with get_db_cursor() as cur:
         # First check that the expiration delta is valid
         if new_token.expiration_delta is not None and new_token.expiration_delta < 0:
-            raise HTTPException(status_code=400, detail=Error("Invalid expiration delta", ErrorCodes.BAD_REQUEST).to_json())
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("Invalid expiration delta", ErrorCodes.BAD_REQUEST).to_json())
         
         # Check if the user has more than 5 tokens
         query = "SELECT COUNT(*) FROM PersonalAccessTokens WHERE userId = %s"
@@ -33,7 +32,7 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
         count = cur.fetchone()['count']
 
         if count >= 5:
-            raise HTTPException(status_code=400, detail=Error("User has reached the maximum number of tokens", ErrorCodes.INVALID_REQUEST).to_json())
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("User has reached the maximum number of tokens", ErrorCodes.INVALID_REQUEST).to_json())
 
         # Generate the token
         secret_key = getenv("PERSONAL_TOKEN_SECRET_KEY")
@@ -57,7 +56,7 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
 @router.delete("/delete_personal_access_tokens")
 async def delete_personal_access_token(current_user: Annotated[User, Depends(deserialize_user)], tokens: RemovePersonalAccessTokenBody):
     if (len(tokens.token_ids) > 5):
-        raise HTTPException(status_code=400, detail=Error("Cannot delete more than 5 tokens at once", ErrorCodes.INVALID_REQUEST).to_json())
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("Cannot delete more than 5 tokens at once", ErrorCodes.INVALID_REQUEST).to_json())
 
     with get_db_cursor() as cur:
         query = "DELETE FROM PersonalAccessTokens WHERE userId = %s AND Id = ANY(%s)"
@@ -70,11 +69,6 @@ async def get_personal_access_tokens(current_user: Annotated[User, Depends(deser
         query = "SELECT Id as token_id, userId as user_id, name, expiresAt as expires_at, createdAt as created_at FROM PersonalAccessTokens WHERE userId = %s"
         cur.execute(query, (current_user.user_id,))
         tokens = cur.fetchall()
-
-        if not tokens:
-            return {
-                "personal_tokens": []
-            }
         
         return {
             "personal_tokens": tokens
