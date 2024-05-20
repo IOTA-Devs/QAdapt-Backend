@@ -39,7 +39,8 @@ async def singup(
             "username": user["username"],
             "user_id": user["userid"],
             "full_name": full_name,
-            "email": email
+            "email": email,
+            "avatar_url": user["avatarurl"]
         }
         return session
 
@@ -61,11 +62,14 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         if not session:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=Error("Failed to create session", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
         
+        print(user)
+
         session["user"] = {
             "username": user["username"],
             "user_id": user["userid"],
             "full_name": user["fullname"],
-            "email": user["email"]
+            "email": user["email"],
+            "avatar_url": user["avatarurl"]
         }
         return session
 

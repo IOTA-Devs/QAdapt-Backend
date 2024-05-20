@@ -24,7 +24,7 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
     with get_db_cursor() as cur:
         # First check that the expiration delta is valid
         if new_token.expiration_delta is not None and new_token.expiration_delta < 0:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("Invalid expiration delta", ErrorCodes.BAD_REQUEST).to_json())
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("Invalid expiration delta", ErrorCodes.INVALID_REQUEST).to_json())
         
         # Check if the user has more than 5 tokens
         query = "SELECT COUNT(*) FROM PersonalAccessTokens WHERE userId = %s"

@@ -5,8 +5,9 @@ class ErrorCodes(Enum):
     INVALID_REQUEST = 1100 # The request is invalid and cannot be processed
     INVALID_JSON = 1101 # The JSON payload is invalid
     INVALID_PARAMETER = 1102 # A parameter in the request is invalid
-    RESOURCE_NOT_FOUND = 1103 # The requested resource was not found
-    PROCESSING_ERROR = 1104 # An error occurred while processing the request
+    FILE_TOO_LARGE = 1103 # The file is too large
+    RESOURCE_NOT_FOUND = 1104 # The requested resource was not found
+    PROCESSING_ERROR = 1105 # An error occurred while processing the request
     VALIDATION_ERROR = 1200 # An error occurred while validating the request
     RESOURCE_CONFLICT = 1300 # A conflict occurred while processing the request
     RATE_LIMIT_EXCEEDED = 1400 # The rate limit for the request has been exceeded

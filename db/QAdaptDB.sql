@@ -8,6 +8,7 @@ CREATE TABLE Users (
     passwordHash TEXT NOT NULL,
     joinedAt DATE NOT NULL DEFAULT CURRENT_DATE,
     deletionTimestamp TIMESTAMPTZ
+    avatarURL TEXT
 );
 
 CREATE TABLE Collections (

@@ -16,7 +16,10 @@ async def lifespan(app: FastAPI):
         "DB_USER", 
         "DB_PASSWORD", 
         "ACCESS_TOKEN_SECRET_KEY", 
-        "PERSONAL_TOKEN_SECRET_KEY"
+        "PERSONAL_TOKEN_SECRET_KEY",
+        "STORAGE_ACCOUNT_NAME",
+        "STORAGE_ACCOUNT_SAS_TOKEN",
+        "STORAGE_CONTAINER_NAME"
     ]
     for var in required_env_vars:
         if var not in os.environ:

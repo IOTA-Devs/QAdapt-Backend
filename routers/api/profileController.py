@@ -1,11 +1,13 @@
+from os import getenv
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status, UploadFile
 from pydantic import BaseModel
+from azure.storage.blob import ContentSettings
 
 from ...internal import verify_password, get_password_hash, get_db_cursor
 from ...middlewares import User, deserialize_user
 from ...classes import Error, ErrorCodes
-from ...internal import sessionHandler
+from ...internal import sessionHandler, blob_service_client
 
 router = APIRouter()
 
@@ -17,7 +19,7 @@ class NewProfileDataBody(BaseModel):
 async def update_profile_data(current_user: Annotated[User, Depends(deserialize_user)], new_profile_data_body: NewProfileDataBody):
     with get_db_cursor() as cur:
         if not new_profile_data_body.new_username and not new_profile_data_body.new_name:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("No data provided", ErrorCodes.BAD_REQUEST).to_json())
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("No data provided", ErrorCodes.INVALID_REQUEST).to_json())
         
         query = 'UPDATE Users SET '
         params = []
@@ -40,11 +42,31 @@ async def update_profile_data(current_user: Annotated[User, Depends(deserialize_
         return {"message": "Profile data updated successfully"}
 
 @router.post('/upload_avatar')
-async def change_avatar(current_user: Annotated[User, Depends(deserialize_user)]):
+async def change_avatar(current_user: Annotated[User, Depends(deserialize_user)], avatar: UploadFile):
+    if avatar.content_type != "image/jpg" and avatar.content_type != "image/jpeg": # Only allow JPG and JPEG images
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail=Error("Image format not supported", ErrorCodes.INVALID_REQUEST).to_json())
+    
+    if avatar.size > 8 * 1000000: # Limit file uploads to 8MB
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=Error("Image is to large", ErrorCodes.INVALID_REQUEST).to_json())
+    
+    # Upload the image to blob storage
+    container_name = getenv("STORAGE_CONTAINER_NAME")
+    account_name = getenv("STORAGE_ACCOUNT_NAME")
+
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=f"{current_user.user_id}_avatar.{avatar.content_type.split('/')[1]}")
+    blob_client.upload_blob(avatar.file.read(), overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))
+
+    url = f"https://{account_name}.blob.core.windows.net/{container_name}/{current_user.user_id}_avatar.{avatar.content_type.split('/')[1]}"
+
+    # Set the url in the database for the user
+    with get_db_cursor() as cur:
+        query = "UPDATE Users SET avatarUrl = %s WHERE userId = %s"
+        cur.execute(query, (url, current_user.user_id))
+
     return {"message": "Avatar changed successfully"}
 
 @router.post('/change_password')
-async def change_password(   
+async def change_password(
     current_user: Annotated[User, Depends(deserialize_user)],
     old_password: Annotated[str, Form(min_length=8, max_length=50)],
     new_password: Annotated[str, Form(min_length=8, max_length=50)],
