@@ -2,11 +2,9 @@ from hashlib import sha256
 from urllib.request import Request
 from jose import jwt
 from fastapi import HTTPException, status
-from internal.db import get_conn, release_conn
+from internal.db import get_db_cursor
 from os import getenv
 from datetime import datetime, timezone
-from classes import Error, ErrorCodes
-from psycopg2.extras import RealDictCursor
 
 async def verify_personal_access_token(request: Request):
     token_exception = HTTPException(
@@ -28,19 +26,14 @@ async def verify_personal_access_token(request: Request):
         raise token_exception
     
     # Verify token in the database
-    db_conn = get_conn()
-    db = db_conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
+    with get_db_cursor() as cur:
         hashed_token = sha256()
         hashed_token.update(token.encode())
         query = "SELECT * FROM PersonalAccessTokens WHERE accessTokenHash = %s"
-        db.execute(query, (hashed_token.hexdigest(),))
-        token_data = db.fetchone()
-    except Exception as e:
-        print("Error validating token: ", e)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=Error("Error validating token", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
-    finally:
-        release_conn(db_conn)
+        cur.execute(query, (hashed_token.hexdigest(),))
+        token_data = cur.fetchone()
 
-    return token_data["userid"]
+        if not token_data:
+            raise token_exception
+
+        return token_data["userid"]

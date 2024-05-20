@@ -35,18 +35,19 @@ async def generate_personal_access_token(current_user: Annotated[User, Depends(d
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("User has reached the maximum number of tokens", ErrorCodes.INVALID_REQUEST).to_json())
 
         # Generate the token
+        token_expires = datetime.now(timezone.utc) + timedelta(seconds=new_token.expiration_delta) if new_token.expiration_delta is not None else None
         secret_key = getenv("PERSONAL_TOKEN_SECRET_KEY")
         token = jwt.encode({
             "user_id": current_user.user_id,
             "token_name": new_token.token_name,
-            "type": "personal_access_token"
+            "type": "personal_access_token",
+            "exp": token_expires if token_expires is not None else None
         }, key=secret_key, algorithm="HS256")
 
         # Hash the token
         token_hash = sha256()
         token_hash.update(token.encode())
 
-        token_expires = datetime.now(timezone.utc) + timedelta(seconds=new_token.expiration_delta) if new_token.expiration_delta is not None else None
         query = "INSERT INTO PersonalAccessTokens (userId, name, expiresAt, accessTokenHash) VALUES (%s, %s, %s, %s) RETURNING id"
         cur.execute(query, (current_user.user_id, new_token.token_name, token_expires, token_hash.hexdigest()))
         token_id = cur.fetchone()['id']
