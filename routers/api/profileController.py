@@ -90,7 +90,7 @@ async def change_password(
         
         if sign_out_all:
             # Clear all user sessions
-            sessionHandler.clear_all_user_sessions(current_user.user_id)
+            sessionHandler.clear_all_user_sessions_except(current_user.user_id, current_user.session_id)
 
         return {"message": "Password changed successfully"}
 

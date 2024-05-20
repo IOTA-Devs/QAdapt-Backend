@@ -75,3 +75,7 @@ async def delete_session(session_id: str):
 def clear_all_user_sessions(user_id: int):
     with get_db_cursor() as cur:
         cur.execute('DELETE FROM UserSessions WHERE userId = %s', (user_id,))
+
+def clear_all_user_sessions_except(user_id: int, session_id: str):
+    with get_db_cursor() as cur:
+        cur.execute('DELETE FROM UserSessions WHERE userId = %s AND sessionId != %s', (user_id, session_id))
