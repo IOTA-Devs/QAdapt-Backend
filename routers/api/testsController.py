@@ -8,7 +8,14 @@ from ...internal import get_db_cursor
 router = APIRouter()
 
 @router.get("/")
-async def get_tests(current_user: Annotated[User, Depends(deserialize_user)], limit: Annotated[int, Field(gt=0, lt=501)] = 100, cursor: int = None, script_id: int = None, recent: bool = True):
+async def get_tests(
+    current_user: Annotated[User, Depends(deserialize_user)], 
+    limit: Annotated[int, Field(gt=0, lt=501)] = 100, 
+    cursor: int = None, 
+    script_id: int = None, 
+    recent: bool = True,
+    filter: str = "all"
+    ):
     with get_db_cursor() as cur:
         query = '''SELECT 
                     testId as test_id, 
@@ -31,7 +38,11 @@ async def get_tests(current_user: Annotated[User, Depends(deserialize_user)], li
                 query += 'AND testId > %s'
             params.append(cursor)
 
-        query += " ORDER BY testId DESC LIMIT %s"
+        if filter != "all":
+            query += 'AND status LIKE %s'
+            params.append(f"%{filter}%")
+
+        query += f" ORDER BY testId {"DESC" if recent == True else "ASC"} LIMIT %s"
         params.append(limit)
 
         cur.execute(query, params)
