@@ -1,1 +1,1 @@
-from .clearUserSessions import start_job as clear_user_sessions_job
+from .jobHandler import start_jobs

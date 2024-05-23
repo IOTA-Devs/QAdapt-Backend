@@ -2,7 +2,7 @@ from hashlib import sha256
 from urllib.request import Request
 from jose import jwt
 from fastapi import HTTPException, status
-from internal.db import get_db_cursor
+from internal.db import use_db
 from os import getenv
 from datetime import datetime, timezone
 
@@ -26,7 +26,7 @@ async def verify_personal_access_token(request: Request):
         raise token_exception
     
     # Verify token in the database
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         hashed_token = sha256()
         hashed_token.update(token.encode())
         query = "SELECT * FROM PersonalAccessTokens WHERE accessTokenHash = %s"

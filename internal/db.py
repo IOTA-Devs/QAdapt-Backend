@@ -26,12 +26,12 @@ def release_conn(conn):
     pool.putconn(conn)
 
 @contextmanager
-def get_db_cursor():
+def use_db():
     conn = None
     try:
         conn = get_conn()
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        yield cur
+        yield cur, conn
         conn.commit()
     except Exception as e:
         if conn:

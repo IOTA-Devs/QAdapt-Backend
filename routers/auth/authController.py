@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 from typing import Annotated
 
-from ...internal import get_password_hash, verify_password, get_db_cursor
+from ...internal import get_password_hash, verify_password, use_db
 from ...middlewares import User, deserialize_user
 from ...classes import ErrorCodes, Error
 from ...internal import sessionHandler
@@ -17,7 +17,7 @@ async def singup(
     password: Annotated[str, Form(min_length=8, max_length=50)],
     full_name: Annotated[str, Form(min_length=1, max_length=150)] = None):
 
-    with get_db_cursor() as cur:
+    with use_db() as (cur, conn):
         # Check if the user already existss
         cur.execute('SELECT * FROM Users WHERE email = %s', (email,))
         user = cur.fetchone()
@@ -27,7 +27,8 @@ async def singup(
         # Hash the password for security and storage
         hashed_password = get_password_hash(password)
 
-        cur.execute('INSERT INTO Users (username, email, passwordHash, fullName) VALUES (%s, %s, %s, %s) RETURNING userId, username', (username, email, hashed_password, full_name))
+        cur.execute('INSERT INTO Users (username, email, passwordHash, fullName) VALUES (%s, %s, %s, %s) RETURNING userId, username, avatarURL', (username, email, hashed_password, full_name))
+        conn.commit()
         user = cur.fetchone()
 
         # get session with access and refresh tokens
@@ -46,7 +47,7 @@ async def singup(
 
 @router.post("/login")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         # Verify if the user exists in hte database
         cur.execute('SELECT * FROM Users WHERE email = %s', (form_data.username,))
         user = cur.fetchone()
@@ -61,8 +62,6 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         session = await sessionHandler.create_session(user["userid"])
         if not session:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=Error("Failed to create session", ErrorCodes.INTERNAL_SERVER_ERROR).to_json())
-        
-        print(user)
 
         session["user"] = {
             "username": user["username"],

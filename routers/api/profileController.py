@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from azure.storage.blob import ContentSettings
 from datetime import datetime, timezone
 
-from ...internal import verify_password, get_password_hash, get_db_cursor
+from ...internal import verify_password, get_password_hash, use_db
 from ...middlewares import User, deserialize_user
 from ...classes import Error, ErrorCodes
 from ...internal import sessionHandler, blob_service_client
@@ -18,7 +18,7 @@ class NewProfileDataBody(BaseModel):
 
 @router.put('/update')
 async def update_profile_data(current_user: Annotated[User, Depends(deserialize_user)], new_profile_data_body: NewProfileDataBody):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         if not new_profile_data_body.new_username and not new_profile_data_body.new_name:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("No data provided", ErrorCodes.INVALID_REQUEST).to_json())
         
@@ -60,7 +60,7 @@ async def change_avatar(current_user: Annotated[User, Depends(deserialize_user)]
     url = f"https://{account_name}.blob.core.windows.net/{container_name}/{current_user.user_id}_avatar.{avatar.content_type.split('/')[1]}?m={datetime.now(tz=timezone.utc).timestamp()}"
 
     # Set the url in the database for the user
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         query = "UPDATE Users SET avatarUrl = %s WHERE userId = %s"
         cur.execute(query, (url, current_user.user_id))
 
@@ -73,7 +73,7 @@ async def change_password(
     new_password: Annotated[str, Form(min_length=8, max_length=50)],
     sign_out_all: Annotated[bool, Form()] = False):
 
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         query = "SELECT passwordHash FROM Users WHERE userId = %s"
         cur.execute(query, (current_user.user_id,))
         user = cur.fetchone()
@@ -97,17 +97,17 @@ async def change_password(
 
 @router.post('/delete_account')
 async def delete_account(current_user: Annotated[User, Depends(deserialize_user)], password: Annotated[str, Form(min_length=8, max_length=50)]):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         query = "SELECT passwordHash FROM Users WHERE userId = %s"
         cur.execute(query, (current_user.user_id,))
         user_password = cur.fetchone()
     
-    if not verify_password(password, user_password["passwordhash"]):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=Error("Invalid password", ErrorCodes.AUTHENTICATION_ERROR).to_json())
-    
-    # Update account status for deletion
-    deletionTimestamp = datetime.now(tz=timezone.utc).timestamp()
-    query = "Update Users SET deletionTimestamp = %s"
-    cur.execute(query, (deletionTimestamp,))
+        if not verify_password(password, user_password["passwordhash"]):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=Error("Invalid password", ErrorCodes.AUTHENTICATION_ERROR).to_json())
+        
+        # Update account status for deletion
+        deletionTimestamp = datetime.now(tz=timezone.utc)
+        query = "Update Users SET deletionTimestamp = %s WHERE userId = %s"
+        cur.execute(query, (deletionTimestamp, current_user.user_id))
 
-    return {"message": "Account has been queued for deletion", "deletion_timestamp": deletionTimestamp}
+        return {"message": "Account has been queued for deletion", "deletion_timestamp": deletionTimestamp}

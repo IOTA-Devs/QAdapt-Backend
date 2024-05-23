@@ -2,11 +2,11 @@ from datetime import timedelta, datetime, timezone
 from uuid import uuid4
 from hashlib import sha256
 
-from .db import get_db_cursor
+from .db import use_db
 from .jwt import generate_access_token, generate_refresh_token
 
 async def create_session(user_id: int):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         # Create session id, access and refresh tokens
         session_id = str(uuid4())
         access_token_expiry = timedelta(hours=1)
@@ -23,14 +23,14 @@ async def create_session(user_id: int):
         return { "access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expiry.seconds, "session_id": session_id }
 
 async def get_session(session_id: str):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         cur.execute('SELECT * FROM UserSessions WHERE sessionId = %s', (session_id,))
         session = cur.fetchone()
     
     return session
 
 async def revalidate_session(old_refresh_token: str, session_id: str):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         # First validate that the session exists
         cur.execute('SELECT us.*, u.username FROM UserSessions us INNER JOIN Users u ON u.userId = us.userid WHERE sessionId = %s', (session_id,))
         session = cur.fetchone()
@@ -68,14 +68,14 @@ async def revalidate_session(old_refresh_token: str, session_id: str):
         return { "tokens": { "access_token": new_access_token, "refresh_token": new_refresh_token, "expires_in": access_token_expiry.seconds }, "error": None }
 
 async def delete_session(session_id: str):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         cur.execute('DELETE FROM UserSessions WHERE sessionId = %s', (session_id,))
         return True
 
 def clear_all_user_sessions(user_id: int):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         cur.execute('DELETE FROM UserSessions WHERE userId = %s', (user_id,))
 
 def clear_all_user_sessions_except(user_id: int, session_id: str):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         cur.execute('DELETE FROM UserSessions WHERE userId = %s AND sessionId != %s', (user_id, session_id))

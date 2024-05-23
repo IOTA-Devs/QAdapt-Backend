@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from .jobs import clear_user_sessions_job
+from .jobs import start_jobs
 from .routers import router
 
 @asynccontextmanager
@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
             raise Exception(f"Missing required environment variable: {var}")
 
     # Jobs
-    clear_user_sessions_job()
+    start_jobs()
 
     yield
 

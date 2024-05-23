@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import Field
 
 from ...middlewares import User, deserialize_user
-from ...internal import get_db_cursor
+from ...internal import use_db
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ async def get_tests(
     recent: bool = True,
     filter: str = "all"
     ):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         query = '''SELECT 
                     testId as test_id, 
                     scriptid AS script_id, 
@@ -56,7 +56,7 @@ async def get_tests(
 
 @router.delete("/delete_tests")
 async def delete_tests(current_user: Annotated[User, Depends(deserialize_user)],):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         query = "DELETE FROM Tests WHERE userId = %s"
         cur.execute(query, (current_user.user_id,))
 
@@ -69,7 +69,7 @@ async def get_test_report_data(
     current_user: Annotated[User, Depends(deserialize_user)],
     test_id: int
     ):
-    with get_db_cursor() as cur:
+    with use_db() as (cur, _):
         # Query to get test details
         test_query = '''SELECT 
                         testId as test_id, 
