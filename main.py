@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, docs_url="/")
 
 # Allowed CORS origins
 origins = [
