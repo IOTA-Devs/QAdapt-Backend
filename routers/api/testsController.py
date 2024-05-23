@@ -4,6 +4,7 @@ from pydantic import Field
 
 from ...middlewares import User, deserialize_user
 from ...internal import use_db
+from ...classes import Error, ErrorCodes
 
 router = APIRouter()
 
@@ -84,7 +85,7 @@ async def get_test_report_data(
         test = cur.fetchone()
 
         if not test:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Test with id {test_id} not found for user {current_user.user_id}")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=Error(f"Test with id {test_id} not found for user {current_user.user_id}", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
         
         # Query to get self-healing report details
         report_query = '''SELECT 
@@ -97,9 +98,6 @@ async def get_test_report_data(
                         WHERE testId = %s'''
         cur.execute(report_query, (test_id,))
         reports = cur.fetchall()
-
-        if not reports:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No reports found for test {test_id}")
 
         return {
             "test": test,
