@@ -39,8 +39,8 @@ async def get_tests(
             params.append(cursor)
 
         if filter != "all":
-            query += 'AND status LIKE %s'
-            params.append(f"%{filter}%")
+            query += 'AND status = %s'
+            params.append(filter)
 
         query += f" ORDER BY testId {"DESC" if recent == True else "ASC"} LIMIT %s"
         params.append(limit)
