@@ -56,8 +56,52 @@ async def get_tests(
 
 @router.delete("/delete_tests")
 async def delete_tests(current_user: Annotated[User, Depends(deserialize_user)],):
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+    with get_db_cursor() as cur:
+        query = "DELETE FROM Tests WHERE userId = %s"
+        cur.execute(query, (current_user.user_id,))
 
-@router.get("/report")
-async def get_test_report_data(current_user: Annotated[User, Depends(deserialize_user)],):
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+        return {
+            "message": "All tests deleted successfully"
+        }
+    
+@router.get("/report/{test_id}")
+async def get_test_report_data(
+    current_user: Annotated[User, Depends(deserialize_user)],
+    test_id: int
+    ):
+    with get_db_cursor() as cur:
+        # Query to get test details
+        test_query = '''SELECT 
+                        testId as test_id, 
+                        scriptId AS script_id, 
+                        name, 
+                        startTimestamp AS start_timestamp, 
+                        endTimestamp AS end_timestamp, 
+                        status
+                        FROM Tests 
+                        WHERE userId = %s AND testId = %s'''
+        cur.execute(test_query, [current_user.user_id, test_id])
+        test = cur.fetchone()
+
+        if not test:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Test with id {test_id} not found for user {current_user.user_id}")
+        
+        # Query to get self-healing report details
+        report_query = '''SELECT 
+                        reportId as report_id, 
+                        seleniumSelectorName AS selenium_selector_name, 
+                        healingDescription AS healing_description, 
+                        status, 
+                        screenshotPath AS screenshot_path 
+                        FROM SelfHealingReports 
+                        WHERE testId = %s'''
+        cur.execute(report_query, (test_id,))
+        reports = cur.fetchall()
+
+        if not reports:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No reports found for test {test_id}")
+
+        return {
+            "test": test,
+            "reports": reports
+        }
