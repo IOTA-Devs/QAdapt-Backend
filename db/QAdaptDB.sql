@@ -7,7 +7,7 @@ CREATE TABLE Users (
     email TEXT NOT NULL UNIQUE,
     passwordHash TEXT NOT NULL,
     joinedAt DATE NOT NULL DEFAULT CURRENT_DATE,
-    deletionTimestamp TIMESTAMPTZ
+    deletionTimestamp TIMESTAMPTZ,
     avatarURL TEXT
 );
 
@@ -19,7 +19,7 @@ CREATE TABLE Collections (
     tests INT NOT NULL DEFAULT 0,
     scripts INT NOT NULL DEFAULT 0,
     userId INT NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(userId)
+    FOREIGN KEY (userId) REFERENCES Users(userId) -- ON DELETE CASCADE
 );
 
 CREATE TABLE Scripts (
@@ -28,7 +28,7 @@ CREATE TABLE Scripts (
     userId INT NOT NULL,
     tests INT NOT NULL DEFAULT 0,
     name TEXT NOT NULL,
-    FOREIGN KEY (collectionId) REFERENCES Collections(collectionId),
+    FOREIGN KEY (collectionId) REFERENCES Collections(collectionId) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
 
@@ -41,7 +41,7 @@ CREATE TABLE Tests (
     endTimestamp TIMESTAMPTZ,
     status VARCHAR(7) NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(userId),
-    FOREIGN KEY (scriptId) REFERENCES Scripts(scriptId)
+    FOREIGN KEY (scriptId) REFERENCES Scripts(scriptId) ON DELETE CASCADE
 );
 
 CREATE TABLE SelfHealingReports (
@@ -51,7 +51,7 @@ CREATE TABLE SelfHealingReports (
     healingDescription TEXT NOT NULL,
     status VARCHAR(7) NOT NULL,
     screenshotPath TEXT,
-    FOREIGN KEY (testId) REFERENCES Tests(testId)
+    FOREIGN KEY (testId) REFERENCES Tests(testId) ON DELETE CASCADE
 );
 
 CREATE TABLE UserSessions (
