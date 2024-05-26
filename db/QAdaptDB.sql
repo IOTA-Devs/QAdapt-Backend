@@ -19,7 +19,7 @@ CREATE TABLE Collections (
     tests INT NOT NULL DEFAULT 0,
     scripts INT NOT NULL DEFAULT 0,
     userId INT NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(userId) -- ON DELETE CASCADE
+    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
 );
 
 CREATE TABLE Scripts (
@@ -61,7 +61,7 @@ CREATE TABLE UserSessions (
     refreshTokenHash VARCHAR(64) NOT NULL,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lastAccessed DATE NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(userId)
+    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
 );
 
 CREATE TABLE PersonalAccessTokens (
@@ -71,5 +71,5 @@ CREATE TABLE PersonalAccessTokens (
     accessTokenHash TEXT NOT NULL,
     expiresAt TIMESTAMPTZ,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userId) REFERENCES Users(userId)
+    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
 );
