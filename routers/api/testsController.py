@@ -1,12 +1,15 @@
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from ...middlewares import User, deserialize_user
 from ...internal import use_db
 from ...classes import Error, ErrorCodes
 
 router = APIRouter()
+
+class RemoveTestsBody(BaseModel):
+    test_ids: List[int]
 
 @router.get("/")
 async def get_tests(
@@ -56,13 +59,16 @@ async def get_tests(
         }
 
 @router.delete("/delete_tests")
-async def delete_tests(current_user: Annotated[User, Depends(deserialize_user)],):
+async def delete_tests(current_user: Annotated[User, Depends(deserialize_user)], remove_tests_body: RemoveTestsBody):
+    if len(remove_tests_body.test_ids) < 1 or len(remove_tests_body.test_ids) > 200:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=Error("Cannot delete more than 200 tests at once", ErrorCodes.INVALID_REQUEST).to_json())
+
     with use_db() as (cur, _):
-        query = "DELETE FROM Tests WHERE userId = %s"
-        cur.execute(query, (current_user.user_id,))
+        query = "DELETE FROM Tests WHERE userId = %s AND testId = ANY(%s)"
+        cur.execute(query, (current_user.user_id, remove_tests_body.test_ids))
 
         return {
-            "message": "All tests deleted successfully"
+            "message": "Tests deleted successfully"
         }
     
 @router.get("/report/{test_id}")
@@ -88,8 +94,7 @@ async def get_test_report_data(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=Error(f"Test with id {test_id} not found for user {current_user.user_id}", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
         
         # Query to get self-healing report details
-        report_query = '''SELECT 
-                        reportId as report_id, 
+        report_query = '''SELECT
                         seleniumSelectorName AS selenium_selector_name, 
                         healingDescription AS healing_description, 
                         status, 
