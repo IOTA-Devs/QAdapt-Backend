@@ -7,6 +7,7 @@ from .api import collectionController
 from .api import profileController
 from .api import testsController
 from .api import dashboardController
+from .api import scriptsController
 
 router = APIRouter()
 
@@ -19,3 +20,4 @@ router.include_router(selfHealingController.router, prefix="/api/self_healing", 
 router.include_router(collectionController.router, prefix="/api/collection", tags=["Script Collections"])
 router.include_router(testsController.router, prefix="/api/tests", tags=["Tests"])
 router.include_router(dashboardController.router, prefix="/api/dashboard", tags=["Dashboard"])
+router.include_router(scriptsController.router, prefix="/api/scripts", tags=["Scripts"])
