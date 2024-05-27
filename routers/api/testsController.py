@@ -54,16 +54,6 @@ async def get_tests(
             "tests": tests,
             "total_fetched": len(tests)
         }
-
-@router.delete("/delete_tests")
-async def delete_tests(current_user: Annotated[User, Depends(deserialize_user)],):
-    with use_db() as (cur, _):
-        query = "DELETE FROM Tests WHERE userId = %s"
-        cur.execute(query, (current_user.user_id,))
-
-        return {
-            "message": "All tests deleted successfully"
-        }
     
 @router.get("/report/{test_id}")
 async def get_test_report_data(
