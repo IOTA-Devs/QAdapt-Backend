@@ -52,7 +52,7 @@ async def get_collections(
 @router.post('/create_collection')
 async def create_collection(current_user: Annotated[User, Depends(deserialize_user)], collection_data: CollectionData):
     with use_db() as (cur, _):
-        query = "INSERT INTO Collections (name, description, userId, lastModified) VALUES (%s, %s, %s, CURRENT_DATE)"
+        query = "INSERT INTO Collections (name, description, userId, lastModified) VALUES (%s, %s, %s, CURRENT_TIMESTAMP)"
         cur.execute(query, (collection_data.name, collection_data.description, current_user.user_id))
     return {"message": "Collection created successfully"}
 
@@ -83,6 +83,6 @@ async def update_collection(current_user: Annotated[User, Depends(deserialize_us
         if collection_count == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=Error(f"Collection with id {collection_id} not found for user {current_user.user_id}", ErrorCodes.RESOURCE_NOT_FOUND).to_json())
 
-        query = "UPDATE Collections SET name = %s, description = %s, lastModified = CURRENT_DATE WHERE collectionId = %s AND userId = %s"
+        query = "UPDATE Collections SET name = %s, description = %s, lastModified = CURRENT_TIMESTAMP WHERE collectionId = %s AND userId = %s"
         cur.execute(query, (collection_data.name, collection_data.description, collection_id, current_user.user_id))
     return {"message": "Collection updated successfully"}
