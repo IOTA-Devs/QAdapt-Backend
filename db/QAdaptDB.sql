@@ -13,9 +13,9 @@ CREATE TABLE Users (
 
 CREATE TABLE Collections (
     collectionId SERIAL PRIMARY KEY,
-    name VARCHAR(32)  NOT NULL,
-    lastModified Date NOT NULL,
-    description TEXT NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    lastModified TIMESTAMPTZ NOT NULL,
+    description VARCHAR(256) NOT NULL,
     tests INT NOT NULL DEFAULT 0,
     scripts INT NOT NULL DEFAULT 0,
     userId INT NOT NULL,
