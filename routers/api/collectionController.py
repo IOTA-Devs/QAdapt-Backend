@@ -13,9 +13,6 @@ class CollectionData(BaseModel):
     name: str = Field(max_length=32, min_length=1)
     description: str = Field(max_length=256, min_length=1)
 
-#buscar collections con el userId
-#buscar pruebas con el collectionid
-#innerjoin, procedure
 @router.get('/')
 async def get_collections(
     current_user: Annotated[User, Depends(deserialize_user)],
@@ -49,6 +46,15 @@ async def get_collections(
             "total_fetched": len(userCollections)
         }
 
+@router.get('/count')
+async def get_collections_count(current_user: Annotated[User, Depends(deserialize_user)]):
+    with use_db() as (cur, _):
+        query = "SELECT COUNT(*) FROM Collections WHERE userId = %s"
+        cur.execute(query, (current_user.user_id,))
+        count = cur.fetchone()["count"]
+
+        return {"count": count}
+
 @router.post('/create_collection')
 async def create_collection(current_user: Annotated[User, Depends(deserialize_user)], collection_data: CollectionData):
     with use_db() as (cur, _):
@@ -62,7 +68,7 @@ async def delete_collection(current_user: Annotated[User, Depends(deserialize_us
         # Check if the collection exists and belongs to the current user
         query = "SELECT COUNT(*) FROM Collections WHERE collectionId = %s AND userId = %s"
         cur.execute(query, (collection_id, current_user.user_id))
-        collection_count = cur.fetchone()[0]
+        collection_count = cur.fetchone()["count"]
 
         if collection_count == 0:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=Error(f"Collection with id {collection_id} not found for user {current_user.user_id}", ErrorCodes.RESOURCE_NOT_FOUND).to_json())

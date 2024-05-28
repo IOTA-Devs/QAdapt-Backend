@@ -1,10 +1,9 @@
 from typing import Annotated
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
 from ...middlewares import User, deserialize_user
 from ...internal import use_db
-from ...classes import Error, ErrorCodes
 
 router = APIRouter()
 

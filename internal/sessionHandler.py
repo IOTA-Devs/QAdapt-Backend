@@ -29,7 +29,6 @@ async def get_session(session_id: str):
     
     return session
 
-# TODO: Optimize this function
 async def revalidate_session(old_refresh_token: str, session_id: str):
     with use_db() as (cur, _):
         # First validate that the session exists
