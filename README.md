@@ -1,7 +1,17 @@
 # QAdapt-Backend
 
+## Setup
+
+### Create virtual environment
+```
+python -m venv .venv
+```
+Then activate the environment depending on the os you are working on.
+
 ## Installation
+```
 pip install -r requirements.txt
+```
 
 ## dotenv
 Create a .env file in the root directory and add the following variables:
