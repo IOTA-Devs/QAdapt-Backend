@@ -22,6 +22,7 @@ dummy_collections = [
     {'name': 'LinkedIn', 'description': 'Professional networking'},
     {'name': 'Reddit', 'description': 'Social news aggregation'},
     {'name': 'Pinterest', 'description': 'Image sharing'},
+    {'name': 'WhatsApp', 'description': 'Messaging'},
     {'name': 'Tumblr', 'description': 'Microblogging'},
     {'name': 'Snapchat', 'description': 'Multimedia messaging'},
     {'name': 'WhatsApp', 'description': 'Messaging'},
@@ -36,6 +37,8 @@ dummy_collections = [
     {'name': 'Netflix', 'description': 'Video streaming'},
     {'name': 'YouTube', 'description': 'Video sharing'},
     {'name': 'QAdapt', 'description': 'Automated testing platform'},
+    {'name': 'GitHub', 'description': 'Code hosting'},
+    { 'name': 'GitLab', 'description': 'Code hosting'},
 ]
 # List of dummy scripts
 dummy_scripts = [
@@ -44,11 +47,15 @@ dummy_scripts = [
     'Unblock User', 'Report User', 'Report Post', 'View Profile', 'Edit Profile',
     'Change Password', 'Delete Account', 'Upload Image', 'Upload Video', 'Upload Audio',
     'Upload Document', 'Upload File', 'Download Image', 'Download Video', 'Download Audio',
-    'Download Document', 'Download File'
+    'Download Document', 'Download File', 'View Notifications', 'Clear Notifications', 'View Settings',
+    'Edit Settings', 'View Friends', 'Add Friend', 'Remove Friend', 'View Followers', 'View Following',
+    'View Groups', 'Create Group', 'Edit Group', 'Delete Group', 'Join Group', 'Leave Group',
+    'View Events', 'Create Event', 'Edit Event', 'Delete Event', 'Join Event', 'Leave Event',
+    'View Calendar', 'Add Event to Calendar', 'Remove Event from Calendar', 'View Messages',
 ]
 
 # User ID for which to create collections
-user_ids = [21, 22, 23]  # Replace with the desired user ID
+user_ids = [3]  # Replace with the desired user ID
 
 for user_id in user_ids:
     # Create collections with random names and descriptions

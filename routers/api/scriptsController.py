@@ -31,7 +31,7 @@ async def get_scripts(
                     FROM Scripts WHERE userId = %s AND collectionId = %s'''
 
         if cursor is not None:
-            query += 'AND scriptId < %s'
+            query += ' AND scriptId < %s'
             params.append(cursor)
         
         query += ' ORDER BY scriptId DESC LIMIT %s'

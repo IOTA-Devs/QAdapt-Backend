@@ -17,7 +17,7 @@ class CollectionData(BaseModel):
 async def get_collections(
     current_user: Annotated[User, Depends(deserialize_user)],
     limit: Annotated[int, Field(gt=0, lt=101)] = 50, 
-    date_cursor: datetime = None):
+    cursor: int = None):
 
     with use_db() as (cur, _):
         params = [current_user.user_id]
@@ -30,9 +30,9 @@ async def get_collections(
                     tests
                     FROM collections WHERE userid = %s'''
 
-        if date_cursor is not None:
+        if cursor is not None:
             query += 'AND lastModified < %s'
-            params.append(date_cursor)
+            params.append(datetime.fromtimestamp(cursor / 1000.0))
 
         query += ' ORDER BY lastModified DESC LIMIT %s'
         params.append(limit)

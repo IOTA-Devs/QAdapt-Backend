@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -37,16 +38,16 @@ async def get_tests(
 
         if cursor is not None:
             if recent:
-                query += 'AND testId < %s '
+                query += 'AND startTimestamp < %s '
             else:
-                query += 'AND testId > %s '
-            params.append(cursor)
+                query += 'AND startTimestamp > %s '
+            params.append(datetime.fromtimestamp(cursor / 1000.0)) # Convert timestamp in seconds to a datetime object
 
         if filter != "all":
             query += 'AND status = %s '
             params.append(filter)
 
-        query += f"ORDER BY testId {"DESC" if recent == True else "ASC"} LIMIT %s"
+        query += f"ORDER BY startTimestamp {"DESC" if recent == True else "ASC"} LIMIT %s"
         params.append(limit)
 
         cur.execute(query, params)
