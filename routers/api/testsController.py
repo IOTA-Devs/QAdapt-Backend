@@ -32,21 +32,21 @@ async def get_tests(
         params = [current_user.user_id]
 
         if script_id is not None:
-            query += 'AND scriptId = %s'
+            query += 'AND scriptId = %s '
             params.append(script_id)
 
         if cursor is not None:
             if recent:
-                query += 'AND testId < %s'
+                query += 'AND testId < %s '
             else:
-                query += 'AND testId > %s'
+                query += 'AND testId > %s '
             params.append(cursor)
 
         if filter != "all":
-            query += 'AND status = %s'
+            query += 'AND status = %s '
             params.append(filter)
 
-        query += f" ORDER BY testId {"DESC" if recent == True else "ASC"} LIMIT %s"
+        query += f"ORDER BY testId {"DESC" if recent == True else "ASC"} LIMIT %s"
         params.append(limit)
 
         cur.execute(query, params)

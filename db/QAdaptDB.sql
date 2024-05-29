@@ -27,7 +27,7 @@ CREATE TABLE Scripts (
     collectionId INT NOT NULL,
     userId INT NOT NULL,
     tests INT NOT NULL DEFAULT 0,
-    name TEXT NOT NULL,
+    name VARCHAR(32) NOT NULL,
     FOREIGN KEY (collectionId) REFERENCES Collections(collectionId) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
@@ -55,7 +55,7 @@ CREATE TABLE SelfHealingReports (
 );
 
 CREATE TABLE UserSessions (
-    sessionId TEXT PRIMARY KEY,
+    sessionId VARCHAR(36) PRIMARY KEY,
     userId INT NOT NULL,
     expiresAt TIMESTAMPTZ NOT NULL,
     refreshTokenHash VARCHAR(64) NOT NULL,

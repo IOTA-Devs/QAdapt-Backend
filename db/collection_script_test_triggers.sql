@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION update_collection_counts()
 AS $$
 DECLARE
     script_count INTEGER;
-        test_count INTEGER;
+    test_count INTEGER;
 BEGIN
     -- Get the number of scripts for the collection
     SELECT COUNT(*) INTO script_count
@@ -18,7 +18,7 @@ BEGIN
 
     -- Update the collection with the new counts
     UPDATE Collections
-    SET scripts = script_count, tests = test_count
+    SET scripts = script_count, tests = test_count, lastModified = CURRENT_TIMESTAMP
     WHERE collectionId = NEW.collectionId;
 
     RETURN NULL;

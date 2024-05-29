@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Annotated
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from ...classes import ErrorCodes, Error
-from ...internal import use_db
+from ...internal import use_db, sanitize_search_query
 from ...middlewares import User, deserialize_user
 
 router = APIRouter()
@@ -54,7 +54,26 @@ async def get_collections_count(current_user: Annotated[User, Depends(deserializ
         count = cur.fetchone()["count"]
 
         return {"count": count}
+    
+@router.get('/search')
+async def search_collections_by_name(current_user: Annotated[User, Depends(deserialize_user)], search_query: Annotated[str, Query(max_length=32, min_length=1)]):
+    sanitized_query = sanitize_search_query(search_query)
+    with use_db() as (cur, _):
+        query = '''SELECT
+                    collectionId as collection_id,
+                    name, 
+                    lastModified as last_updated, 
+                    description,
+                    scripts,
+                    tests
+                    FROM collections WHERE LOWER(name) LIKE LOWER(%s) AND userId = %s'''
+        cur.execute(query, (f'%{sanitized_query}%', current_user.user_id))
+        collections = cur.fetchall()
 
+        return {
+            "results": collections 
+        }
+    
 @router.post('/create_collection')
 async def create_collection(current_user: Annotated[User, Depends(deserialize_user)], collection_data: CollectionData):
     with use_db() as (cur, _):
