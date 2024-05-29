@@ -9,17 +9,17 @@ BEGIN
     -- Get the number of scripts for the collection
     SELECT COUNT(*) INTO script_count
     FROM Scripts
-    WHERE collectionId = NEW.collectionId;
+    WHERE collectionId = CASE WHEN TG_OP = 'DELETE' THEN OLD.collectionId ELSE NEW.collectionId END;
 
     -- Get the number of tests for the collection
     SELECT SUM(tests) INTO test_count
     FROM Scripts
-    WHERE collectionId = NEW.collectionId;
+    WHERE collectionId = CASE WHEN TG_OP = 'DELETE' THEN OLD.collectionId ELSE NEW.collectionId END;
 
     -- Update the collection with the new counts
     UPDATE Collections
     SET scripts = script_count, tests = test_count, lastModified = CURRENT_TIMESTAMP
-    WHERE collectionId = NEW.collectionId;
+    WHERE collectionId = CASE WHEN TG_OP = 'DELETE' THEN OLD.collectionId ELSE NEW.collectionId END;
 
     RETURN NULL;
 END;
