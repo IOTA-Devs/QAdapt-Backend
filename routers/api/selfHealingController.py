@@ -46,6 +46,8 @@ async def create_report_item(
         img_path = ""
         cur.execute(query, (testId, selenium_selector, img_path))
         result = cur.fetchone()
+        print("result es: ")
+        print(result["reportid"])
         return result["reportid"]
     return HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
@@ -56,6 +58,23 @@ class EndReportBody(BaseModel):
 @router.post("/end_report")
 async def end_report(token: Annotated[TokenData, Depends(verify_personal_access_token)], reqBody: EndReportBody):
     with use_db() as (cur, _):
-        query = "UPDATE selfhealingreports SET status=%s, healingdescription=%s, WHERE reportid=%s RETURNING *"
+        query = "UPDATE selfhealingreports SET status=%s, healingdescription=%s WHERE reportid=%s RETURNING *"
         response = cur.execute(query, (reqBody.status, reqBody.healingDescription, reqBody.reportId))
         return response
+
+class setupBody(BaseModel):
+    test: str
+    script: str
+    collection: str
+@router.post('/selfHealingSetup')
+async def setup(token: Annotated[TokenData, Depends(verify_personal_access_token)], reqBody: setupBody):
+    #checar si existe una coleccion con ese nombre, si no existe agregarla, checar si no existe un script con ese nombre si no existe crearlo y asignar a coleccion, checar si existe un test con ese nombre, si no existe agregarlo
+    #si existe el test regresarlo y ya
+    with use_db() as (cur, _):
+        query = "SELECT * FROM tests WHERE userid=%s AND name=%s"
+        response = cur.execute(query, (token.user_id, reqBody.test))
+        if response:
+            return response
+        else:
+            return {"nah man":"rip"}
+    pass
