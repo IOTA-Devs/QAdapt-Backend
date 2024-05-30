@@ -1,10 +1,15 @@
+from os import getenv
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException, status, UploadFile, Form, File
 from pydantic import BaseModel
+from azure.storage.blob import ContentSettings
+from datetime import datetime, timezone
 
 from typing import Annotated, Any
 from ...middlewares.verifyPersonalAccessToken import TokenData, verify_personal_access_token
 from ...internal import use_db
+from ...internal import blob_service_client
+from ...classes import Error, ErrorCodes
 router = APIRouter()
 
 
@@ -46,6 +51,20 @@ async def create_report_item(
         img_path = ""
         cur.execute(query, (testId, selenium_selector, img_path))
         result = cur.fetchone()
+        if img.size > 8 * 1000000:
+            raise HTTPException(status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=Error("Image is too large", ErrorCodes.INVALID_REQUEST).to_json())
+
+        container_name = getenv("STORAGE_CONTAINER_NAME")
+        account_name = getenv("STORAGE_ACCOUNT_NAME")
+
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob=f"{token.user_id}_{result["reportid"]}_image.png")
+        blob_client.upload_blob(img.file.read(), overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))
+        
+        url = f"https://{account_name}.blob.core.windows.net/{container_name}/{token.user_id}_{result["reportid"]}_image.png?m={datetime.now(tz=timezone.utc).timestamp()}"
+        query = "UPDATE selfhealingreports SET screenshotpath = %s WHERE testid = %s RETURNING *"
+        cur.execute(query, (url, result["testid"]))
+        result = cur.fetchone()
+
         return result["reportid"]
     return HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
