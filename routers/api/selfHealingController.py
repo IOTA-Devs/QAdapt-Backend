@@ -72,9 +72,56 @@ async def setup(token: Annotated[TokenData, Depends(verify_personal_access_token
     #si existe el test regresarlo y ya
     with use_db() as (cur, _):
         query = "SELECT * FROM tests WHERE userid=%s AND name=%s"
-        response = cur.execute(query, (token.user_id, reqBody.test))
-        if response:
-            return response
+        userId = str(token.user_id)
+        cur.execute(query, (userId, reqBody.test))
+        result = cur.fetchone()
+
+        if result:
+            return result
         else:
-            return {"nah man":"rip"}
-    pass
+            print("test no existe")
+            # como no existe el test, revisar si existe el script especificado
+            query = "SELECT * FROM scripts WHERE userid=%s AND name=%s"
+            cur.execute(query, (userId, reqBody.script))
+            result = cur.fetchone()
+            if result:
+                print("script existe")
+                #crear y retornar el test que va a este script todo normal chill, obtener el id del script de result
+                #no se bien como determinar el status de tests? buscar eso despues tambien lol, asumo que en creacion seria success ig
+                query = "INSERT INTO tests (scriptid, userid, name, starttimestamp, endtimestamp, status) VALUES (%s, %s, %s, NOW(), NULL, 'Success') RETURNING *"
+                cur.execute(query, (str(result.scriptid), userId, reqBody.test))
+                result = cur.fetchone()
+                return result
+            else:
+                print("script no existe")
+                #revisar si no existe la coleccion
+                query = "SELECT * FROM collections WHERE userid=%s AND name=%s"
+                cur.execute(query, (userId, reqBody.collection))
+                result = cur.fetchone()
+                if result:
+                    #crear el script con el id de la collection obtener el id, crear el test con el id script retornoarlo
+                    query = "INSERT INTO scripts (collectionid, userid, name) VALUES (%s, %s, %s) RETURNING *"
+                    cur.execute(query, (str(result.collectionid), userId, reqBody.script))
+                    result = cur.fetchone()
+                    query = "INSERT INTO tests (scriptid, userid, name, starttimestamp, endtimestamp, status) VALUES (%s, %s, %s, NOW(), NULL, 'Success') RETURNING *"
+                    cur.execute(query, (str(result.scriptid), userId, reqBody.test))
+                    result = cur.fetchone()
+                    print("si existe la collection pero lo demas no")
+                    return result
+                else:
+                    #crear la colelction, obtener el id, crear el script con id collection obtener id, crear test con id script retornarlo
+                    #tal vez esta ruta deberia de dar un error porque no estoy seguro como incluir la descripcion de la coleccion si no existe 
+                    query = "INSERT INTO collections (name, lastmodified, description, userid) VALUES (%s, NOW(), 'A collection of scripts', %s) RETURNING *"
+                    cur.execute(query, (reqBody.collection, userId))
+                    result = cur.fetchone()
+                    print(result)
+                    query = "INSERT INTO scripts (collectionid, userid, name) VALUES (%s, %s, %s) RETURNING *"
+                    cur.execute(query, (str(result["collectionid"]), userId, reqBody.script))
+                    result = cur.fetchone()
+                    query = "INSERT INTO tests (scriptid, userid, name, starttimestamp, endtimestamp, status) VALUES (%s, %s, %s, NOW(), NULL, 'Success') RETURNING *"
+                    cur.execute(query, (str(result["scriptid"]), userId, reqBody.test))
+                    result = cur.fetchone()
+                    print("no existe nada")
+                    return result
+        
+    # pass
