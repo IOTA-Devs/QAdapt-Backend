@@ -46,8 +46,6 @@ async def create_report_item(
         img_path = ""
         cur.execute(query, (testId, selenium_selector, img_path))
         result = cur.fetchone()
-        print("result es: ")
-        print(result["reportid"])
         return result["reportid"]
     return HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
@@ -79,21 +77,18 @@ async def setup(token: Annotated[TokenData, Depends(verify_personal_access_token
         if result:
             return result
         else:
-            print("test no existe")
             # como no existe el test, revisar si existe el script especificado
             query = "SELECT * FROM scripts WHERE userid=%s AND name=%s"
             cur.execute(query, (userId, reqBody.script))
             result = cur.fetchone()
             if result:
-                print("script existe")
                 #crear y retornar el test que va a este script todo normal chill, obtener el id del script de result
                 #no se bien como determinar el status de tests? buscar eso despues tambien lol, asumo que en creacion seria success ig
                 query = "INSERT INTO tests (scriptid, userid, name, starttimestamp, endtimestamp, status) VALUES (%s, %s, %s, NOW(), NULL, 'Success') RETURNING *"
-                cur.execute(query, (str(result.scriptid), userId, reqBody.test))
+                cur.execute(query, (str(result["scriptid"]), userId, reqBody.test))
                 result = cur.fetchone()
                 return result
             else:
-                print("script no existe")
                 #revisar si no existe la coleccion
                 query = "SELECT * FROM collections WHERE userid=%s AND name=%s"
                 cur.execute(query, (userId, reqBody.collection))
@@ -101,12 +96,11 @@ async def setup(token: Annotated[TokenData, Depends(verify_personal_access_token
                 if result:
                     #crear el script con el id de la collection obtener el id, crear el test con el id script retornoarlo
                     query = "INSERT INTO scripts (collectionid, userid, name) VALUES (%s, %s, %s) RETURNING *"
-                    cur.execute(query, (str(result.collectionid), userId, reqBody.script))
+                    cur.execute(query, (str(result["collectionid"]), userId, reqBody.script))
                     result = cur.fetchone()
                     query = "INSERT INTO tests (scriptid, userid, name, starttimestamp, endtimestamp, status) VALUES (%s, %s, %s, NOW(), NULL, 'Success') RETURNING *"
-                    cur.execute(query, (str(result.scriptid), userId, reqBody.test))
+                    cur.execute(query, (str(result["scriptid"]), userId, reqBody.test))
                     result = cur.fetchone()
-                    print("si existe la collection pero lo demas no")
                     return result
                 else:
                     #crear la colelction, obtener el id, crear el script con id collection obtener id, crear test con id script retornarlo
@@ -114,14 +108,12 @@ async def setup(token: Annotated[TokenData, Depends(verify_personal_access_token
                     query = "INSERT INTO collections (name, lastmodified, description, userid) VALUES (%s, NOW(), 'A collection of scripts', %s) RETURNING *"
                     cur.execute(query, (reqBody.collection, userId))
                     result = cur.fetchone()
-                    print(result)
                     query = "INSERT INTO scripts (collectionid, userid, name) VALUES (%s, %s, %s) RETURNING *"
                     cur.execute(query, (str(result["collectionid"]), userId, reqBody.script))
                     result = cur.fetchone()
                     query = "INSERT INTO tests (scriptid, userid, name, starttimestamp, endtimestamp, status) VALUES (%s, %s, %s, NOW(), NULL, 'Success') RETURNING *"
                     cur.execute(query, (str(result["scriptid"]), userId, reqBody.test))
                     result = cur.fetchone()
-                    print("no existe nada")
                     return result
         
     # pass
