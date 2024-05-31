@@ -22,8 +22,9 @@ async def api_is_alive():
     return response
 
 
+#TODO:
+#terminar DELETE route
 # borrar este: https://qadapt.blob.core.windows.net/qadapt-container/20_1183_image.png?m=1717081950.944575
-#tengo que cambiar todo el maldito request a usar form-data que hueva
 @router.post("/start_report")
 async def start_report(
     token: Annotated[TokenData, Depends(verify_personal_access_token)], 
@@ -40,7 +41,7 @@ async def start_report(
         account_name = getenv("STORAGE_ACCOUNT_NAME")
 
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=f"{token.user_id}_{reportId}_image.png")
-        blob_client.upload_blob(img.file.read(), oveVrwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))
+        blob_client.upload_blob(img.file.read(), overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))
         
         url = f"https://{account_name}.blob.core.windows.net/{container_name}/{token.user_id}_{reportId}_image.png?m={datetime.now(tz=timezone.utc).timestamp()}"
         query =  "UPDATE selfhealingreports SET status='Failed', healingdescription='original locator failed, starting self-healing', screenshotpath=%s WHERE reportid=%s RETURNING *"
@@ -51,15 +52,33 @@ async def start_report(
 #darle un testid y que borre todos los blobs y entradas a BD
 @router.delete("/deleteReports")
 async def delete_reports(
-        token: Annotated[TokenData, Depends(verify_personal_access_token)]
+        token: Annotated[TokenData, Depends(verify_personal_access_token)],
+        testid: int
 ):
+    deletedReports = []
+    # return testid
     with use_db() as (cur, _):
 
         container_name = getenv("STORAGE_CONTAINER_NAME")
-        account_name = getenv("STORAGE_ACCOUNT_NAME")
 
-        blob_client = blob_service_client.get_blob_client(container=container_name, blob="20_1147_image.png")
-        blob_client.delete_blob(delete_snapshots="include")
+        # primero obtener todos los selfhealingreports que pertenecen a este test
+        # con esa lista, correr este cidogo con los selfhealingreport ids y borrar cada uno y eliminarlo de la bd
+        query = "SELECT * FROM selfhealingreports WHERE testid=%s;"
+        cur.execute(query, (testid,))
+        reports = cur.fetchall()
+        for report in reports:
+            print(report["reportid"])
+            blob_client = blob_service_client.get_blob_client(container=container_name, blob=f"{token.user_id}_{report["reportid"]}_image.png")
+            if blob_client.exists():
+                blob_client.delete_blob(delete_snapshots="include")
+
+            query = "DELETE FROM selfhealingreports WHERE reportid=%s RETURNING *"
+            cur.execute(query, (report["reportid"],))
+            deletedReport = cur.fetchone()
+            deletedReports.append(deletedReport)
+
+        return deletedReports
+
 
 
 class createReport(BaseModel):
