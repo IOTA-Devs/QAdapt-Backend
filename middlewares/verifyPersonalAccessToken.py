@@ -1,10 +1,14 @@
 from hashlib import sha256
-from urllib.request import Request
+from fastapi import Request
 from jose import jwt
 from fastapi import HTTPException, status
-from internal.db import use_db
+from ..internal.db import use_db
 from os import getenv
 from datetime import datetime, timezone
+from pydantic import BaseModel
+
+class TokenData(BaseModel):
+    user_id: int
 
 async def verify_personal_access_token(request: Request):
     token_exception = HTTPException(
@@ -36,4 +40,5 @@ async def verify_personal_access_token(request: Request):
         if not token_data:
             raise token_exception
 
-        return token_data["userid"]
+        returnData = TokenData(user_id=token_data["userid"])
+        return returnData
