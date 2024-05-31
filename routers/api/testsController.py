@@ -86,7 +86,7 @@ async def get_test_report_data(
                         seleniumSelectorName AS selenium_selector_name, 
                         healingDescription AS healing_description, 
                         status, 
-                        screenshotPath AS screenshot_path 
+                        screenshotUrl AS screenshot_url
                         FROM SelfHealingReports 
                         WHERE testId = %s'''
         cur.execute(report_query, (test_id,))
@@ -94,5 +94,5 @@ async def get_test_report_data(
 
         return {
             "test": test,
-            "reports": reports
+            "logs": reports
         }

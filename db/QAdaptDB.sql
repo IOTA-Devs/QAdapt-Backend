@@ -50,7 +50,7 @@ CREATE TABLE SelfHealingReports (
     seleniumSelectorName TEXT NOT NULL,
     healingDescription TEXT NOT NULL,
     status VARCHAR(7) NOT NULL,
-    screenshotPath TEXT,
+    screenshotUrl TEXT,
     FOREIGN KEY (testId) REFERENCES Tests(testId) ON DELETE CASCADE
 );
 

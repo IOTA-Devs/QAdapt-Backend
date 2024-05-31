@@ -39,7 +39,7 @@ async def start_report(
         blob_client.upload_blob(img.file.read(), overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))
         
         url = f"https://{account_name}.blob.core.windows.net/{container_name}/{token.user_id}_{reportId}_image.png?m={datetime.now(tz=timezone.utc).timestamp()}"
-        query =  "UPDATE selfhealingreports SET status='Failed', healingdescription='original locator failed, starting self-healing', screenshotpath=%s WHERE reportid=%s RETURNING *"
+        query =  "UPDATE selfhealingreports SET status='Failed', healingdescription='original locator failed, starting self-healing', screenshoturl=%s WHERE reportid=%s RETURNING *"
         cur.execute(query, (url, reportId))
         response = cur.fetchone()
         return response
@@ -80,7 +80,7 @@ async def create_report_item(
     reqBody: createReport
 ):
     with use_db() as (cur, _):
-        query = "INSERT INTO selfhealingreports (testid, seleniumselectorname, healingdescription, status, screenshotpath) VALUES (%s, %s, 'self-healing has not started', 'Pending', %s) RETURNING *"
+        query = "INSERT INTO selfhealingreports (testid, seleniumselectorname, healingdescription, status, screenshoturl) VALUES (%s, %s, 'self-healing has not started', 'Pending', %s) RETURNING *"
         img_path = ""
         cur.execute(query, (reqBody.testId, reqBody.selenium_selector, img_path))
         result = cur.fetchone()
@@ -97,7 +97,7 @@ async def end_report(
     img: Annotated[UploadFile, File()]
 ):
     with use_db() as (cur, _):
-        #checar si screenshotpath tiene algo, si smn borrar el blob y hacerle update en bd, si no crear el blob y update en bd
+        #checar si screenshoturl tiene algo, si smn borrar el blob y hacerle update en bd, si no crear el blob y update en bd
         container_name = getenv("STORAGE_CONTAINER_NAME")
         account_name = getenv("STORAGE_ACCOUNT_NAME")
         if img.size > 8 * 1000000:
@@ -108,7 +108,7 @@ async def end_report(
         blob_client.upload_blob(img.file.read(), overwrite=True, content_settings=ContentSettings(content_type='image/jpeg'))
 
         url = f"https://{account_name}.blob.core.windows.net/{container_name}/{token.user_id}_{reportId}_image.png?m={datetime.now(tz=timezone.utc).timestamp()}"
-        query = "UPDATE selfhealingreports SET status=%s, healingDescription=%s, screenshotpath=%s WHERE reportid=%s RETURNING *"
+        query = "UPDATE selfhealingreports SET status=%s, healingDescription=%s, screenshoturl=%s WHERE reportid=%s RETURNING *"
         cur.execute(query, (status, healingDescription, url, reportId))
         response = cur.fetchone()
         return response
