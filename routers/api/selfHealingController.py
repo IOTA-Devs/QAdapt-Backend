@@ -22,8 +22,6 @@ async def api_is_alive():
     return response
 
 
-#TODO:
-#terminar DELETE route
 # borrar este: https://qadapt.blob.core.windows.net/qadapt-container/20_1183_image.png?m=1717081950.944575
 @router.post("/start_report")
 async def start_report(
@@ -33,7 +31,6 @@ async def start_report(
 ):
     print("se hizo start_report o nah?")
     with use_db() as (cur, _):
-        #crear un blob y agregarlo como url
         if img.size > 8 * 1000000:
             raise HTTPException(status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=Error("Image is too large", ErrorCodes.INVALID_REQUEST).to_json())
 
@@ -49,7 +46,6 @@ async def start_report(
         response = cur.fetchone()
         return response
 
-#darle un testid y que borre todos los blobs y entradas a BD
 @router.delete("/deleteReports")
 async def delete_reports(
         token: Annotated[TokenData, Depends(verify_personal_access_token)],
@@ -61,8 +57,6 @@ async def delete_reports(
 
         container_name = getenv("STORAGE_CONTAINER_NAME")
 
-        # primero obtener todos los selfhealingreports que pertenecen a este test
-        # con esa lista, correr este cidogo con los selfhealingreport ids y borrar cada uno y eliminarlo de la bd
         query = "SELECT * FROM selfhealingreports WHERE testid=%s;"
         cur.execute(query, (testid,))
         reports = cur.fetchall()
@@ -97,7 +91,6 @@ async def create_report_item(
 
         return result["reportid"]
 
-    return HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
 #cambiar todo el maldito request a usar form-data
 @router.post("/end_report")
@@ -185,4 +178,3 @@ async def setup(token: Annotated[TokenData, Depends(verify_personal_access_token
                     print("final de setup")
                     return result
         
-    # pass
