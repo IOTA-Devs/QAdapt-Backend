@@ -5,13 +5,12 @@ from pydantic import BaseModel
 from azure.storage.blob import ContentSettings
 from datetime import datetime, timezone
 
-from typing import Annotated, Any
+from typing import Annotated
 from ...middlewares.verifyPersonalAccessToken import TokenData, verify_personal_access_token
 from ...internal import use_db
 from ...internal import blob_service_client
 from ...classes import Error, ErrorCodes
 router = APIRouter()
-
 
 @router.get("/alive")
 async def api_is_alive():
@@ -20,7 +19,6 @@ async def api_is_alive():
     }
     
     return response
-
 
 # borrar este: https://qadapt.blob.core.windows.net/qadapt-container/20_1183_image.png?m=1717081950.944575
 @router.post("/start_report")
@@ -73,8 +71,6 @@ async def delete_reports(
 
         return deletedReports
 
-
-
 class createReport(BaseModel):
     selenium_selector: str
     testId: str
@@ -90,7 +86,6 @@ async def create_report_item(
         result = cur.fetchone()
 
         return result["reportid"]
-
 
 #cambiar todo el maldito request a usar form-data
 @router.post("/end_report")
