@@ -37,7 +37,7 @@ async def get_tests_table_data(
         # populate the arrays
         curr_date = start_date
         graph_data = {}
-        for _ in range((start_date.year - end_date.year) * 12 + end_date.month - start_date.month + 1):
+        for _ in range((end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1):
             graph_data[monthNamesAbbr[curr_date.month] + "\n" + str(curr_date.year)] = 0
             curr_date = add_months(curr_date, 1)
         

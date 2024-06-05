@@ -23,8 +23,8 @@ def sanitize_search_query(search_query: str):
     return sanitized_query
 
 def add_months(current_date: date, months: int):
-    years_to_add = (current_date.month + months) // 12
-    curr_month = (current_date.month + months) % 12
+    years_to_add = (current_date.month + months - 1) // 12
+    curr_month = (current_date.month + months - 1) % 12 + 1
     day = current_date.day
 
     month_range = monthrange(current_date.year + years_to_add, curr_month)
