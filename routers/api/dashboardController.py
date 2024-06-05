@@ -1,7 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from datetime import datetime, date, timezone
-from pydantic import Field
 
 from ...middlewares import User, deserialize_user
 from ...internal import use_db, add_months, monthNamesAbbr

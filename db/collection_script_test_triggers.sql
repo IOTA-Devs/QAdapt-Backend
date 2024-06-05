@@ -65,3 +65,19 @@ BEGIN
 		(SELECT COUNT(*) AS failed_tests FROM tests WHERE userId = user_id AND status = 'Failed'),
 		(SELECT COUNT(*) AS self_healed_Scripts FROM scripts WHERE userId = user_id);
 END; $$
+
+CREATE OR REPLACE FUNCTION update_user_sessions()
+    RETURNS TRIGGER
+AS $$
+DECLARE sessions_count INTEGER;
+BEGIN
+    SELECT COUNT(*) FROM UserSessions WHERE userId = NEW.userId INTO sessions_count;
+
+    IF sessions_count > 5 THEN
+        DELETE FROM UserSessions WHERE userId = NEW.userId AND createdAt = (SELECT MIN(createdAt) FROM UserSessions WHERE userId = NEW.userId);
+    END IF;
+END; $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_user_sessions_trigger
+    AFTER INSERT ON UserSessions FOR EACH ROW
+EXECUTE FUNCTION update_user_sessions();
