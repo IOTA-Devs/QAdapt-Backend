@@ -76,8 +76,10 @@ BEGIN
     IF sessions_count > 5 THEN
         DELETE FROM UserSessions WHERE userId = NEW.userId AND createdAt = (SELECT MIN(createdAt) FROM UserSessions WHERE userId = NEW.userId);
     END IF;
+
+	RETURN NULL;
 END; $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_user_sessions_trigger
+CREATE OR REPLACE TRIGGER update_user_sessions_trigger
     AFTER INSERT ON UserSessions FOR EACH ROW
 EXECUTE FUNCTION update_user_sessions();
