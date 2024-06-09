@@ -35,6 +35,7 @@ app = FastAPI(lifespan=lifespan)
 # Allowed CORS origins
 origins = [
     "http://localhost:1420",
+    "https://black-ground-0bc6a5a1e.5.azurestaticapps.net/login"
 ]
 
 # Middlewares
