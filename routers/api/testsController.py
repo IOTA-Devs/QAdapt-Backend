@@ -12,7 +12,7 @@ router = APIRouter()
 class RemoveTestsBody(BaseModel):
     test_ids: List[int]
 
-@router.get("/")
+@router.get("")
 async def get_tests(
     current_user: Annotated[User, Depends(deserialize_user)], 
     limit: Annotated[int, Field(gt=0, lt=501)] = 100, 

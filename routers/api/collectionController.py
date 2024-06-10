@@ -13,7 +13,7 @@ class CollectionData(BaseModel):
     name: str = Field(max_length=32, min_length=1)
     description: str = Field(max_length=256, min_length=1)
 
-@router.get('/')
+@router.get('')
 async def get_collections(
     current_user: Annotated[User, Depends(deserialize_user)],
     limit: Annotated[int, Field(gt=0, lt=101)] = 50, 

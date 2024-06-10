@@ -15,7 +15,7 @@ class UpdateScritData(BaseModel):
     name: str = Field(max_length=32, min_length=1)
     script_id: int
 
-@router.get('/')
+@router.get('')
 async def get_scripts(
     current_user: Annotated[User, Depends(deserialize_user)],
     collection_id: int,

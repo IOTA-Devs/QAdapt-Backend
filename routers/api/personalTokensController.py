@@ -64,7 +64,7 @@ async def delete_personal_access_token(current_user: Annotated[User, Depends(des
         cur.execute(query, (current_user.user_id, tokens.token_ids))
         return { "message": "Tokens deleted" }
 
-@router.get("/")
+@router.get("")
 async def get_personal_access_tokens(current_user: Annotated[User, Depends(deserialize_user)]):
     with use_db() as (cur, _):
         query = "SELECT Id as token_id, name, expiresAt as expires_at, createdAt as created_at FROM PersonalAccessTokens WHERE userId = %s"
